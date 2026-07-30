@@ -1,6 +1,6 @@
 # PocketPortal AI Handoff
 
-Last updated: July 29, 2026
+Last updated: July 30, 2026
 
 ## Purpose
 
@@ -8,9 +8,16 @@ This document gives a new AI assistant enough context to continue PocketPortal w
 
 ## Project summary
 
-PocketPortal is a self-hosted mobile device lab for six physical Android devices and one iPhone. A Linux home server is the always-on Android host; the user's current machine runs Ubuntu. Users should eventually be able to monitor devices, obtain exclusive control, install test applications, and run approved Maestro or Appium tests remotely.
+PocketPortal is a self-hosted mobile device lab for six physical Android
+devices and one iPhone. A Linux home server is the always-on Android host; the
+user's current machine runs Ubuntu. V1 serves one owner from computers on the
+same trusted home network. Shared access, remote access, and managed test
+execution are later platform capabilities.
 
-The platform must remain application-project agnostic. PocketPortal does not model source repositories, projects, workspaces, tenants, users, roles, or leases in V1. It is a single-owner personal lab managing devices, application artifacts, approved test suites, and runs. Package metadata and tags provide organization.
+The platform must remain application-project agnostic. PocketPortal does not
+model source repositories, projects, workspaces, tenants, users, roles, leases,
+test-suite catalogs, or test runs in V1. It is a single-owner personal lab
+focused on devices, browser control, and application installation.
 
 ## Current status
 
@@ -32,7 +39,7 @@ The platform must remain application-project agnostic. PocketPortal does not mod
 - The authorized Pixel 4 XL is reported online by the live `/api/devices` endpoint.
 - `pocketportal doctor` now checks Linux distribution confidence, Java, ADB, connected devices, user systemd, lingering, service state, and current-boot kernel segfaults through tested clean-architecture boundaries.
 - `scripts/install-linux.sh` provides distribution-neutral resumable installation and upgrade, immutable version activation, API health checks, automatic restoration after failed health checks, and explicit rollback. The old `install-ubuntu.sh` entrypoint is a compatibility wrapper.
-- Version `0.1.6-SNAPSHOT` is active on the real server. Earlier upgrade and rollback behavior was verified between `0.1.0` and `0.1.1`; subsequent dashboard, generalized-Linux, enriched-observation, screenshot, and wake-action releases were deployed through the same versioned upgrade path.
+- Version `0.1.7-SNAPSHOT` is active on the real server. Earlier upgrade and rollback behavior was verified between `0.1.0` and `0.1.1`; subsequent dashboard, generalized-Linux, enriched-observation, screenshot, wake-action, and limited ADB bridge releases were deployed through the same versioned upgrade path.
 - The installed `~/.local/bin/pocketportal doctor` finds the conventional user config automatically. On the server it reports one authorized Pixel 4 XL, active service, enabled lingering, and zero current-boot segfaults.
 - Ubuntu 25.10 is the first real-host validation but is end-of-life, so doctor and the generalized installer emit an upgrade warning.
 - Minimal Debian 13 and Fedora 42 container checks validate non-Ubuntu distribution detection, prerequisite guidance, initial installation, idempotent reinstall, versioned upgrade, health-gated activation, and rollback. Service and health commands are deterministic fakes, so these checks do not claim real systemd, udev, USB, or physical-device validation.
@@ -63,7 +70,52 @@ The platform must remain application-project agnostic. PocketPortal does not mod
 - The per-device alternative passed end to end on the Pixel 4 XL: server ADB temporarily enabled authenticated TCP mode on device port `5555`; Mac port `5556` was forwarded over SSH to the Pixel's Wi-Fi address; the Mac's normal ADB daemon connected to `127.0.0.1:5556`; the Pixel approved the Mac's distinct ADB key; and Android Studio ran normally while the device remained online. Each client key must be approved once per phone.
 - The user then successfully controlled the Pixel, installed an application, and launched it from Mac Android Studio through the tunnel. Installation and launch took several seconds, confirming functionality while identifying latency as a future measurement and UX concern.
 - A future client helper should automate per-device port selection, tunnel monitoring, local connection, authorization guidance, and teardown. Teardown must disconnect local ADB, close the tunnel, and return the phone to USB-only mode. Never copy private ADB keys between clients or expose device port `5555` through router forwarding.
-- The client helper has been named **PocketPortal Connect** and is intentionally a separate future companion project. Its first prototype should be a small SSH-backed CLI with a replaceable transport boundary; add a desktop UI, Windows support, credential-store integration, or alternative transports only after the CLI workflow earns that complexity. Do not put desktop lifecycle code into the PocketPortal server.
+- The client helper is named **PocketPortal Connect**. Keep it as a separate
+  executable with a replaceable transport boundary; add a desktop UI, Windows
+  packaging, credential-store integration, or alternative transports only
+  after the CLI workflow earns that complexity. Do not put desktop lifecycle
+  code into the PocketPortal server.
+- The first limited-access PocketPortal Connect protocol slice is implemented
+  as a separate `connect` executable module. It creates a loopback-only local
+  ADB listener and forwards only ADB bytes through a bearer-authenticated
+  WebSocket to one validated server-side device serial. The server bridge is
+  disabled by default, requires a 32-character-or-longer environment token,
+  never exposes the shared ADB smart socket, and restores USB mode on close.
+  The client refuses plaintext WebSockets for non-loopback hosts.
+- This bridge has automated application, adapter parsing, configuration,
+  WebSocket authorization, and CLI configuration tests. PocketPortal now has a
+  configurable Netty HTTPS/WSS connector, separate plaintext and TLS bind
+  addresses, a non-destructive Linux certificate/setup script, and client
+  support that combines normal JVM trust with an optional PEM bundle. A
+  disposable smoke test verified both HTTP and certificate-validated HTTPS.
+  The bridge still needs its first end-to-end deployment against the physical
+  Pixel; SSH remains the proven fallback until that passes.
+- The work Mac has employer-managed TLS traffic inspection. The user already
+  has a work-provided utility that installs the inspection CA for curl, Node,
+  Java, and Ruby. PocketPortal Connect should use the JVM/system trust store by
+  default and also accept an explicit PEM CA bundle or Java trust store.
+  Certificate pinning can be optional for unmanaged clients but cannot be the
+  sole trust mechanism because inspected WSS connections may present the
+  employer-issued substitute certificate.
+- `scripts/configure-linux-tls.sh --host PRIVATE_LAN_IP` generates an EC
+  certificate with an IP SAN, a PKCS12 key store, a random bridge token, and
+  owner-only secret files. It keeps HTTP on localhost and binds TLS only to the
+  specified LAN address. The script refuses to overwrite existing TLS files.
+- Ktor CIO was rejected for the server after an actual HTTPS smoke test showed
+  that its server engine does not implement HTTPS. The application now uses
+  Ktor Netty; a subsequent smoke test returned ready responses over both HTTP
+  and certificate-validated HTTPS.
+- The `0.1.7-SNAPSHOT` release was deployed through the health-gated installer.
+  TLS is active at `https://192.168.0.151:8443`, while plaintext HTTP remains
+  restricted to `127.0.0.1:8080`. The server generated owner-only TLS and
+  bridge secrets and remained healthy after restart.
+- PocketPortal Connect passed its first real end-to-end non-SSH validation from
+  the personal Mac. Local ADB reported `127.0.0.1:15556` as an online Pixel 4
+  XL running Android 13 through authenticated WSS. Ctrl+C closed the tunnel,
+  removed the local ADB entry, restored the Pixel to its USB serial on the
+  server, and left PocketPortal active.
+- The live server currently reports two USB Android devices: Pixel 4 XL serial
+  `9B011FFBA00A1L` and Lenovo TB336FU serial `HNY09D8P`.
 - Off-LAN connectivity and coexistence with other VPNs are explicitly the final roadmap decision. Do not integrate Tailscale, WireGuard, Cloudflare Access, a relay, or public SSH yet. Finish the trusted home-network device lab and client workflow first, and never expose ADB or PocketPortal through router port forwarding as a shortcut.
 - Frontend dependencies are pinned in `frontend/package-lock.json`; Gradle builds and tests the frontend as part of the normal verification path. The clean-room image uses a dedicated Node build stage and copies only the compiled assets into the JVM build.
 - The selected USB hub has been purchased.
@@ -88,11 +140,11 @@ The platform must remain application-project agnostic. PocketPortal does not mod
 - Future browser control: WebSockets only when bidirectional streaming/input is needed
 - Android connectivity: ADB
 - Android control: scrcpy
-- Private networking: Tailscale
+- V1 networking: trusted home LAN with host-firewall restriction
 - Process supervision: systemd
-- TLS/reverse proxy: Caddy or Tailscale-native HTTPS
+- TLS/reverse proxy: deferred until V2/off-LAN access
 - Deployment: run directly on Linux with user systemd for V1; do not put the hardware-facing service in Docker
-- V1 access boundary: Tailscale identity and policy; no PocketPortal login database
+- V1 access boundary: one owner on the trusted home LAN; no PocketPortal login database
 
 The Ktor service should serve the compiled React application so V1 deploys as one application service.
 
@@ -102,7 +154,10 @@ The initial structure should separate the application composition root, framewor
 
 Testing is part of the definition of done. Use fast unit tests for domain rules and use cases, contract/integration tests for adapters and SQLDelight, Ktor API tests for authorization and validation, focused React component tests, and a small critical-path browser suite. Put ADB behind a deterministic fake for routine tests and keep real-device tests in an explicit opt-in hardware suite. CI should run all checks that do not require attached hardware.
 
-PocketPortal is the lean V1 control plane for device inventory and job intent. User authorization, leases, and security audit history are V2 concerns. Platform-specific or risky execution can live in separate projects. Likely candidates are the Mac-based Apple Bridge, restricted Maestro/Appium workers, and possibly a future browser-streaming gateway. Keep AAB/APK tooling local in V1 unless it gains genuine independent consumers.
+PocketPortal is the lean V1 control plane for inventory, browser control, safe
+device actions, and APK/AAB installation. User authorization, leases, security
+audit history, Maestro/Appium jobs, and off-LAN access are V2 concerns.
+Platform-specific or risky execution can live in separate projects.
 
 Separate projects communicate through small authenticated and versioned contracts, initially using HTTPS/JSON unless measured needs justify more. Commands need stable job IDs, idempotency, heartbeats, timeouts, cancellation, and contract tests. Workers must not access PocketPortal's SQLite file directly. Do not add a broker, service mesh, generic event bus, or microservice infrastructure speculatively.
 
@@ -116,7 +171,9 @@ The documentation site is public-facing content only. `PocketPortal-Plan.md` and
 
 V1 should provide:
 
-- A Tailscale-private single-owner dashboard showing Android device presence, model, OS version, battery, charging state, connection type, last-seen time, and a low-frequency screenshot
+- A home-LAN-only single-owner dashboard showing Android device presence,
+  model, OS version, battery, charging state, connection type, last-seen time,
+  and a low-frequency screenshot
 - Safe actions such as refresh, wake, reboot, screenshot, and starting a control session
 - Upload, inspection, confirmation, and installation of one APK onto one explicit device
 - Clear handling of offline, unauthorized, recovery, and failed-action states
@@ -150,10 +207,11 @@ Approved Maestro and Appium suites should declare compatible package names, plat
 
 ## Roadmap highlights
 
-- V1: Single-owner Android dashboard, Tailscale-private access, safe actions, and single-APK installation
-- V2: PocketPortal users, roles, capabilities, leases, and security audit events when multi-user demand is real
-- V1.5: Device-specific AAB installation and one trusted Maestro smoke-test workflow
-- Later: Restricted Appium workers, broader Maestro support, parallel Android test execution, and improved browser-native sessions
+- V1: Single-owner home-LAN Android dashboard, browser control, safe actions,
+  Android Studio connection guidance/tooling, and APK/AAB installation
+- V2: PocketPortal users, roles, capabilities, leases, security audit events,
+  Maestro/Appium jobs, test artifacts, and off-LAN access when real demand exists
+- Later: Parallel Android test execution and improved browser-native sessions
 - iPhone automation: A dedicated Mac mini or similar Mac host running Xcode, Appium/XCUITest, and WebDriverAgent
 
 For AAB handling, use [`VanyaHuaman/aabx`](https://github.com/VanyaHuaman/aabx) as the behavioral reference. Port its essential workflow into a hardened Kotlin `BundleArtifactService`; do not simply run the existing Node CLI:
@@ -188,16 +246,20 @@ The hub still needs a 24–48 hour six-device acceptance test. Verify stable ADB
 ## Security invariants
 
 - Never expose ADB, scrcpy, Appium, remote desktop, or internal worker services through router port forwarding.
-- Bind services to localhost or the Tailscale interface where feasible.
+- Bind internal services to localhost where feasible. When enabling the V1 HTTP
+  endpoint on the LAN, restrict it to the trusted home subnet with the host
+  firewall.
 - Treat APKs, AABs, filenames, metadata, and test suites as untrusted input.
 - Use fixed argument arrays such as `ProcessBuilder`; never interpolate browser input into shell commands.
-- Validate the target device against inventory and re-check capability plus lease immediately before acting.
+- Validate the target device against inventory immediately before acting and
+  serialize operations that could conflict. Add capability and lease checks in
+  V2.
 - Use server-generated temporary paths, upload limits, timeouts, bounded logs, and predictable cleanup.
 - Do not store signing secrets, application secrets, PINs, or credentials in source control or audit events.
 
 ## Immediate next action
 
-Complete Phase 1 before expanding the custom dashboard:
+Continue the lean V1 while the full device lab is assembled:
 
 1. Inventory and label all seven devices, cables, and hub ports.
 2. Connect the six Android devices to the powered hub.
@@ -206,9 +268,10 @@ Complete Phase 1 before expanding the custom dashboard:
 5. Run the 24–48 hour hub acceptance test and record battery and disconnect behavior.
 6. Test individual and simultaneous scrcpy sessions.
 7. Select a lightweight remote graphical session.
-8. Configure Tailscale and verify access from the personal Mac and PC.
+8. Enable firewall-restricted home-LAN access and verify it from the personal Mac and PC.
 9. Confirm company policy before involving the work Mac.
-10. Use the observed workflow and reliability issues to finalize the dashboard MVP.
+10. Continue browser control and APK/AAB installation based on observed
+    workflow and reliability issues; do not begin V2 platform features.
 
 ## Guidance for the next AI
 

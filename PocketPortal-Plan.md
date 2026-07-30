@@ -11,14 +11,18 @@ PocketPortal will provide a central place to access six Android devices and one 
 - A work Mac, where company policy permits
 - Other authorized devices with a modern browser or remote-desktop client
 
-The Ubuntu home server will act as the always-on device host. Android devices will connect primarily over USB. The initial version will use existing, proven tools instead of building a custom video and input protocol.
+The Linux home server will act as the always-on device host. Android devices
+will connect primarily over USB. V1 is for one owner using the devices from
+computers on the same trusted home network. The initial version will use
+existing, proven tools instead of building a custom video and input protocol.
 
 ## 2. Goals
 
 - Reliably view and control all Android devices remotely.
 - Remain application-project agnostic: work with any compatible APK, AAB, package name, UI framework, and approved test suite.
 - Keep the devices connected, charged, labeled, and ready to use.
-- Provide secure access without exposing ADB or control services to the public internet.
+- Provide convenient access on the trusted home network without exposing ADB
+  or control services to the public internet.
 - Support Android development and debugging through Android Studio.
 - Provide the best practical access path for the iPhone within Apple's restrictions.
 - Start with a simple working system and add a custom web interface only where it provides real value.
@@ -29,7 +33,8 @@ The Ubuntu home server will act as the always-on device host. Android devices wi
 - Avoid unexplained literal values in implementation code. Put deploy-time values in documented configuration and stable protocol or product values in clearly owned named constants.
 - Make first-time installation, upgrades, configuration, verification, and recovery straightforward and well documented.
 - Defer PocketPortal-managed users, roles, and exclusive leases until V2 and a real multi-user need.
-- Leave room for future testing, automation, health monitoring, shared viewing, and reservations.
+- Leave room for future testing, automation, authentication, shared viewing,
+  and reservations without implementing them speculatively in V1.
 
 ## 3. Non-goals for the first version
 
@@ -45,6 +50,10 @@ The Ubuntu home server will act as the always-on device host. Android devices wi
 - Direct public or user-network access to an Appium server.
 - Physical iPhone automation from the Ubuntu host.
 - Project, workspace, tenant, billing, or per-team administration concepts.
+- PocketPortal-managed accounts, login, roles, leases, reservations, queues,
+  audit history, or multi-user concurrency policy.
+- Maestro or Appium job execution and test artifact history.
+- Off-home-network access, VPN selection, relays, or public exposure.
 - Assuming a particular application ID, repository layout, programming language, mobile framework, CI provider, or product such as Scribematic.
 
 ## 4. Proposed architecture
@@ -61,15 +70,15 @@ The Ubuntu home server will act as the always-on device host. Android devices wi
                          ├── PocketPortal dashboard
                          ├── optional Android Studio session
                          ├── remote desktop
-                         └── Tailscale
+                         └── host firewall
 
  iPhone ──nearby/paired── Personal Mac
                          ├── Apple iPhone Mirroring
                          ├── remote desktop
-                         └── Tailscale
+                         └── host firewall
 
  Personal Mac ────┐
- Personal PC ─────┼── Tailscale private network
+ Personal PC ─────┼── Trusted home LAN
  Work Mac ────────┘   (only if company policy permits)
 ```
 
@@ -112,13 +121,32 @@ monitoring, local `adb connect`, authorization guidance, and explicit
 Studio session hosted on Linux through remote desktop. Do not turn the server
 ADB smart socket or a device ADB port into a publicly listening service.
 
-If repeated setup justifies implementation, build this as a separate
-**PocketPortal Connect** companion project rather than adding desktop concerns
-to the server. Start with a small CLI using SSH as the proven transport behind
-an internal transport boundary. It may later gain a minimal macOS/Windows
-interface, credential storage, updates, and alternative private transports.
-Do not begin with a GUI or invent a custom public tunnel, VPN, or authentication
-protocol.
+The first PocketPortal Connect protocol slice now exists as a separate
+executable module. It exposes a loopback-only port to the client's normal ADB
+daemon and forwards only those bytes through a token-authenticated WebSocket
+to one validated device. It is disabled by default and refuses plaintext
+non-loopback client connections. It is not ready for LAN deployment until the
+TLS connector and certificate workflow are implemented and tested locally.
+The physical Pixel and personal-Mac path has now passed end to end over WSS,
+including local ADB visibility, device commands, Ctrl+C cleanup, removal of the
+local ADB entry, and restoration to USB on the server. The work-Mac validation
+remains.
+
+The work Mac uses employer-managed TLS traffic inspection. PocketPortal Connect
+must therefore use the normal JVM/system trust store by default and support an
+explicit PEM CA bundle or Java trust store for environments whose inspection
+certificate is not already visible to the client runtime. Certificate pinning
+may be offered as an optional stricter mode for unmanaged clients, but it must
+not be the only connection mode. Never add the employer's private trust
+material to the PocketPortal server; only public CA certificates belong in a
+client trust configuration.
+
+Keep **PocketPortal Connect** as a separate executable and dependency boundary
+rather than adding desktop lifecycle concerns to the server application. It
+may move to its own repository when independent releases or reuse justify that
+cost. It may later gain a minimal macOS/Windows interface, credential storage,
+updates, and alternative private transports. Do not begin with a GUI or invent
+a general-purpose public tunnel, VPN, or authentication platform.
 
 Off-LAN connectivity is deliberately the final roadmap decision. Do not choose
 or integrate Tailscale, WireGuard, Cloudflare Access, a relay, public SSH, or
@@ -145,26 +173,39 @@ This solution depends on Apple's proximity, account, operating-system, and secur
 
 If the future goal becomes automated iOS application testing, add a dedicated Mac host with Xcode, Appium, and WebDriverAgent as a separate roadmap phase.
 
-## 7. Secure remote access
+## 7. Network access
 
-Tailscale will provide the private network connecting the server and approved client computers.
+V1 is intentionally limited to one owner on the trusted home network.
+PocketPortal does not provide application login in V1. The service may be
+bound to a private LAN address only after the host firewall restricts it to the
+home subnet and the owner has verified that the network itself is trusted.
+Localhost remains the safe default during setup.
 
 Security rules:
 
 - Do not port-forward ADB, scrcpy WebSockets, Android Studio, or remote desktop from the home router.
-- Bind PocketPortal services to localhost or the Tailscale interface where feasible.
-- Use Tailscale identity and access policies as the V1 reachability boundary.
-- Use Tailscale access policies to restrict which users and devices can reach PocketPortal.
+- Bind internal ADB and control services to localhost or an explicitly scoped
+  interface; do not make the ADB server smart socket generally reachable.
+- Restrict the PocketPortal HTTP port to the trusted home subnet with the host
+  firewall when LAN access is enabled.
 - Give the work Mac access only if personal VPN software and access to home systems comply with employer policy.
 - Do not place personal Apple credentials or Android secrets on a work-managed computer.
 - Keep the server, ADB tools, scrcpy, remote-desktop software, and dashboard dependencies updated.
-- Record security-relevant events without logging device contents, clipboard data, or credentials.
+- Do not mistake a LAN-only deployment for a hardened untrusted-network
+  service.
+
+Off-LAN connectivity, authentication, identity-aware access, TLS, and VPN
+selection belong to V2 and should be evaluated only after the home-LAN workflow
+is useful. Router port forwarding is never an acceptable shortcut.
 
 ### Multi-user access model — V2
 
 V1 is a single-owner personal lab. It will not add a user database, application
-login, roles, capability policies, or control leases. PocketPortal remains
-private through Tailscale and must not be exposed through router forwarding.
+login, roles, capability policies, or user-facing control leases. PocketPortal
+remains limited to the trusted home LAN and must not be exposed through router
+forwarding. Implement only narrow process-level serialization where two
+simultaneous operations could corrupt device or artifact state; this is an
+internal safety mechanism, not a reservation system.
 
 Add the following model in V2 only when another real user needs independent
 access:
@@ -258,7 +299,7 @@ Operational considerations:
 - Decide where the phones and powered hubs will physically live.
 - Verify that the Ubuntu server has sufficient USB controllers, power, storage, and cooling.
 - Choose the remote-desktop technology.
-- Confirm whether the work Mac may connect to the personal Tailscale network.
+- Confirm whether the work Mac may connect to the personal home-lab network.
 
 **Exit condition:** Every device is identified, labeled, and assigned a connection method.
 
@@ -274,8 +315,10 @@ Operational considerations:
 - Install and test scrcpy with every device individually.
 - Test multiple simultaneous devices.
 - Configure a lightweight graphical session and remote desktop.
-- Install Tailscale on the server and personal client computers.
-- Restrict remote-desktop access to the private network.
+- Enable only the PocketPortal and remote-desktop ports required on the trusted
+  home subnet.
+- Verify access from the personal Mac and PC while confirming that router
+  port-forwarding remains disabled.
 
 **Exit condition:** Each personal computer can securely reach the server and interact with every Android device.
 
@@ -347,20 +390,21 @@ Selection criteria:
 - Compatibility with current Android and scrcpy releases
 - Ease of recovery after USB disconnects or server restarts
 - Ability to relay one device stream to multiple viewers
-- Ability to accept input exclusively from the current lease holder
+- Ability to serialize input safely for the single V1 owner, with a clean path
+  to exclusive leases in V2
 
 **Exit condition:** PocketPortal can start, stop, and recover interactive sessions without unsafe public services.
 
 ### Phase 5: iPhone bridge
 
 - Configure iPhone Mirroring on the selected personal Mac.
-- Configure secure remote desktop to that Mac through Tailscale.
+- Configure secure remote desktop to that Mac on the trusted home LAN.
 - Add an iPhone card to PocketPortal that links to instructions or the Mac session.
 - Clearly distinguish indirect iPhone access from server-hosted Android control.
 
 **Exit condition:** The iPhone has a documented, repeatable remote-access path.
 
-### Phase 6: Reliability and automation
+### Phase 6: V1 reliability and packaging
 
 - Add health checks for ADB, USB state, battery, temperature where available, and disk usage.
 - Automatically rediscover devices after reconnect or server reboot.
@@ -372,7 +416,7 @@ Selection criteria:
 
 **Exit condition:** Normal disconnects and server restarts require little or no manual repair.
 
-### Phase 7: Multi-user expansion
+### Phase 7: V2 shared and off-LAN platform
 
 - Add PocketPortal-managed or external identity sessions.
 - Add administrator, operator, and viewer roles backed by capability checks.
@@ -384,10 +428,12 @@ Selection criteria:
 - Add optional scheduled reservations, limits, grace periods, and idle-release policies.
 - Add generic OpenID Connect for installations that do not use Tailscale identity.
 - Add notifications for control requests, transfers, lease expiry, and reservation start times.
+- Evaluate off-home-network access, TLS, Tailscale, WireGuard, or another
+  identity-aware private transport based on the proven client workflow.
 
 **Exit condition:** Multiple users can safely share the device fleet without conflicting control, ambiguous ownership, or unnecessary duplicate streams.
 
-### Phase 8: Device-specific AAB installation — V1.5
+### Phase 8: Device-specific AAB installation — late V1
 
 Use [aabx](https://github.com/VanyaHuaman/aabx) as the reference implementation for the established AAB workflow:
 
@@ -430,7 +476,7 @@ The production service must correct the assumptions appropriate to the original 
 
 **Exit condition:** Authorized users can safely distribute known test artifacts across compatible leased devices and receive complete per-device results.
 
-### Phase 10: Approved Maestro test jobs — V1.5
+### Phase 10: Approved Maestro test jobs — V2
 
 Maestro will be PocketPortal's first automated test integration because its Linux CLI can target physical Android devices through ADB and its YAML flows require less runner infrastructure than general-purpose test code.
 
@@ -446,7 +492,7 @@ Maestro will be PocketPortal's first automated test integration because its Linu
 - Results include suite and test status, duration, device and OS, application version and checksum, console output, screenshots, recordings, JUnit XML when available, initiating user, and cancellation or timeout reason.
 - Administrators may cancel a job; cancellation must terminate child processes, collect available artifacts, and release the device lease.
 
-V1.5 does not execute arbitrary uploaded Maestro workspaces. Approved suites are selected from administrator-registered sources.
+V2 does not execute arbitrary uploaded Maestro workspaces. Approved suites are selected from administrator-registered sources.
 
 **Exit condition:** An operator can run an approved Maestro suite on one leased physical Android device, observe progress, receive artifacts and a clear result, and rely on cleanup and lease release after success, failure, cancellation, or timeout.
 
@@ -501,14 +547,15 @@ The following stack is the committed direction for PocketPortal V1:
 - **Commands:** REST endpoints
 - **Realtime status:** Server-Sent Events
 - **Future interactive streaming:** WebSockets
-- **Private network:** Tailscale
+- **V1 network:** Trusted home LAN with host-firewall restriction
 - **Android connectivity:** Android platform tools and ADB
 - **Android control:** scrcpy
 - **Development tooling:** Android Studio, optional
-- **Remote graphical access:** A secure remote-desktop solution restricted to Tailscale
+- **Remote graphical access:** A secure remote-desktop solution restricted to
+  the trusted home LAN
 - **Service supervision:** systemd
-- **Reverse proxy and TLS:** Caddy or a Tailscale-native HTTPS option
-- **V1 access boundary:** Tailscale identity and policy
+- **Reverse proxy and TLS:** Deferred until V2/off-LAN requirements justify it
+- **V1 access boundary:** One owner on the trusted home LAN; no application login
 - **V2 authentication:** PocketPortal or external application sessions
 - **V2 authorization:** Administrator, operator, and viewer roles backed by capability checks
 - **V2 session concurrency:** Exclusive device-control leases with inactivity expiry
@@ -527,9 +574,8 @@ Linux home server
 │   ├── SSE event stream
 │   ├── device supervisor
 │   ├── action runner
-│   ├── lease and session manager
-│   ├── audit service
-│   ├── SQLite database
+│   ├── narrow per-device operation guards
+│   ├── optional local persistence when a V1 feature requires it
 │   └── compiled React assets
 └── systemd
 ```
@@ -679,7 +725,11 @@ Ktor routes must contain transport concerns only. They parse and validate reques
 
 APK inspection should use a pinned Android build-tools implementation such as `apkanalyzer` or `aapt2`. Installation uses a fixed operation equivalent to `adb -s <validated-serial> install -r <server-generated-temp-path>`, with any additional supported behavior represented by explicit typed options rather than browser-supplied command flags.
 
-The V1.5 `BundleArtifactService` ports the workflow proven by `aabx` into Kotlin. It invokes a pinned Bundletool through fixed `ProcessBuilder` arguments, always includes a validated device ID when connected devices affect output or installation, uses a unique job directory, captures bounded structured output, enforces timeouts, and cleans only paths owned by that job.
+The late-V1 `BundleArtifactService` ports the workflow proven by `aabx` into
+Kotlin. It invokes a pinned Bundletool through fixed `ProcessBuilder`
+arguments, always includes a validated device ID when connected devices affect
+output or installation, uses a unique job directory, captures bounded
+structured output, enforces timeouts, and cleans only paths owned by that job.
 
 ### Frontend boundaries
 
@@ -858,13 +908,15 @@ PocketPortal's first useful release is successful when:
 
 - All six Android devices remain connected for several days without systematic failures.
 - Every Android device can be viewed and controlled from the personal Mac and PC.
-- Access works remotely through the private network without public port forwarding.
+- Access works from the owner's personal computers on the trusted home LAN
+  without public port forwarding.
 - A server restart restores device discovery automatically.
 - The dashboard accurately reports device state and does not expose arbitrary command execution.
-- Tailscale policy restricts V1 access to the trusted owner without public port forwarding.
+- The host firewall limits the V1 HTTP endpoint to the trusted home subnet.
 - The owner can inspect and install a single test APK, see its verified metadata, confirm replacement, and receive a clear result.
 - Temporary APK uploads are size-limited, use server-generated paths, and are deleted according to policy.
-- V1.5 can install an AAB onto one explicit device using an isolated, device-specific APK set and a recorded non-secret signing mode.
+- Late V1 can install an AAB onto one explicit device using an isolated,
+  device-specific APK set and a recorded non-secret signing mode.
 - The iPhone access path is documented and works through the selected personal Mac.
 
 ## 15. First implementation checklist
@@ -888,7 +940,13 @@ PocketPortal's first useful release is successful when:
 - [ ] Test all Android devices with scrcpy.
 - [x] Prove a Mac Android Studio session using local ADB plus a per-device network ADB tunnel without sharing PocketPortal's server daemon.
 - [x] Verify interactive device access plus application installation and launch from Mac Android Studio through the per-device tunnel.
-- [ ] Prototype PocketPortal Connect as a separate SSH-backed CLI only when repeated manual client setup justifies it.
+- [x] Implement the first limited-access PocketPortal Connect CLI and
+  token-authenticated per-device WebSocket protocol behind a separate
+  executable-module boundary.
+- [x] Add and locally validate HTTPS/WSS plus certificate generation, owner-only
+  secret storage, and client PEM/JVM trust handling.
+- [ ] Prove the limited-access bridge end to end from a Mac and confirm Android
+  Studio installation, launch, reconnect, and teardown behavior.
 - [ ] Evaluate off-LAN access and coexistence with personal or corporate VPNs last, after the local product workflow is complete.
 - [ ] Test several simultaneous scrcpy sessions.
 - [ ] Verify APK metadata inspection with representative debug and release builds.
@@ -896,13 +954,12 @@ PocketPortal's first useful release is successful when:
 - [ ] Use the local `aabx` project as a behavioral reference and capture representative AAB success and failure cases.
 - [ ] Port the AAB build/install workflow into a Kotlin `BundleArtifactService` using fixed argument lists.
 - [ ] Verify explicit multi-device targeting, unique job directories, signing modes, concurrent-job isolation, failure handling, and cleanup.
-- [ ] Define the restricted job and artifact model needed before enabling Maestro.
-- [ ] Register and run one trusted Maestro smoke suite as the V1.5 automation milestone.
-- [ ] Verify test timeout, cancellation, child-process cleanup, artifact collection, and lease release.
-- [ ] Add Appium only after the restricted worker boundary is implemented and reviewed.
+- [ ] In V2, define the restricted job and artifact model needed before enabling Maestro.
+- [ ] In V2, register and run one trusted Maestro smoke suite.
+- [ ] In V2, verify test timeout, cancellation, child-process cleanup, artifact collection, and lease release.
+- [ ] In V2, add Appium only after the restricted worker boundary is implemented and reviewed.
 - [ ] Select and configure a remote graphical session.
-- [ ] Install and restrict Tailscale access.
-- [ ] Test access from the personal Mac and PC.
+- [ ] Enable firewall-restricted home-LAN access and test it from the personal Mac and PC.
 - [ ] Check company policy before connecting the work Mac.
 - [ ] Configure the iPhone and personal-Mac mirroring path.
 - [ ] Run the basic setup long enough to identify recurring problems.
@@ -939,4 +996,7 @@ PocketPortal's first useful release is successful when:
 
 ## 17. Recommended next action
 
-Build Phase 1 before writing the custom dashboard. A week of using ADB, scrcpy, remote desktop, and Tailscale will reveal the real reliability and workflow problems. PocketPortal should then solve those observed problems instead of predicting them.
+Continue the existing V1 dashboard by completing reliable browser control,
+single-device APK/AAB installation, and simple documented or scripted Android
+Studio connectivity on the trusted home LAN. Validate the full six-device hub
+before adding shared-user, automation-runner, or off-LAN infrastructure.

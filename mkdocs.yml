@@ -7,9 +7,9 @@ repo_name: VanyaHuaman/PocketPortal
 
 theme:
   name: material
+  logo: assets/pocketportal-mark.svg
+  favicon: assets/pocketportal-mark.svg
   font: false
-  icon:
-    logo: material/cellphone-link
   features:
     - content.code.copy
     - navigation.footer

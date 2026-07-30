@@ -48,9 +48,10 @@ PocketPortal is a self-hosted control plane that makes real Android hardware ava
 ## Built for the lab you actually have
 
 PocketPortal will remain application-project agnostic. V1 is a single-owner
-personal lab that manages devices, artifacts, approved test suites, and runs
-without requiring source-code projects or workspaces. Multi-user identity,
-roles, and leases are deliberately deferred.
+personal lab for trusted-home-LAN device access, browser control, and
+application installation without requiring source-code projects or workspaces.
+Multi-user identity, roles, leases, managed test runs, and off-LAN access are
+deliberately deferred.
 
 The initial deployment target is a Linux home server with physical Android devices connected through a powered USB hub. The hardware-facing service runs directly on the host so USB, ADB, and scrcpy remain straightforward to operate. Ubuntu is the first validated distribution, not an application requirement.
 

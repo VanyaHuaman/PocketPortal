@@ -45,6 +45,11 @@ On a Linux host with user systemd, build the distribution elsewhere and install 
 
 The installer preserves configuration, activates an immutable versioned release, verifies both API endpoints, and automatically restores the previous release if health checks fail. Run `~/.local/bin/pocketportal doctor` for host diagnostics. See the [Linux runtime guide](./docs/operations/linux-runtime.md) for prerequisites, upgrades, and rollback.
 
+The optional limited Android Studio bridge uses a separate
+`pocketportal-connect` distribution. It requires HTTPS/WSS for non-loopback
+connections and supports both the normal Java trust store and an additional
+PEM CA bundle for managed computers with TLS inspection.
+
 ## Verify changes
 
 ```bash
@@ -92,6 +97,7 @@ The script creates an isolated `.venv-docs` environment and installs the pinned 
 - `infrastructure`: adapters for clocks and, later, ADB, SQLite, and processes
 - `web`: Ktor transport and API models
 - `app`: composition root and executable service
+- `connect`: loopback-only Android Studio bridge CLI
 - `frontend`: React application, added with the first dashboard feature
 - `testing/clean-room`: Podman-based fresh-Linux installation smoke test
 - `testing/linux-compatibility`: Debian- and Fedora-family installer contract tests

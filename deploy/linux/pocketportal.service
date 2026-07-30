@@ -5,6 +5,7 @@ After=network.target
 [Service]
 Type=simple
 Environment=POCKETPORTAL_CONFIG=%h/.config/pocketportal/pocketportal.properties
+EnvironmentFile=-%h/.config/pocketportal/pocketportal.env
 ExecStart=%h/.local/share/pocketportal/current/bin/pocketportal
 Restart=on-failure
 RestartSec=5

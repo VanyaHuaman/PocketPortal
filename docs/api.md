@@ -83,8 +83,9 @@ Possible failures are:
 | `503` | ADB is missing, timed out, or the capture command failed |
 
 Screenshots contain whatever is visible on the physical device. Keep direct
-access bound to localhost. V1 remote access belongs behind Tailscale identity
-and policy; PocketPortal-managed login is deferred to V2.
+access bound to localhost during setup. When enabling V1 home-LAN access,
+restrict the HTTP port to the trusted home subnet with the host firewall.
+PocketPortal-managed login and off-LAN access are deferred to V2.
 
 ## Wake Android device
 
@@ -104,5 +105,5 @@ failure returns `503`.
 
 !!! warning
     The current endpoint has no application login. Keep PocketPortal bound to
-    localhost until Tailscale-private access is configured, and never expose
-    device actions through router port forwarding.
+    localhost until firewall-restricted home-LAN access is configured, and
+    never expose device actions through router port forwarding.

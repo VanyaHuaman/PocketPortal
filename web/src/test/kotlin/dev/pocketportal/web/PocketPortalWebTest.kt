@@ -10,6 +10,9 @@ import dev.pocketportal.application.device.DeviceScreenshotFailure
 import dev.pocketportal.application.device.DeviceWakeFailure
 import dev.pocketportal.application.device.DeviceWakeResult
 import dev.pocketportal.application.device.WakeAndroidDevice
+import dev.pocketportal.application.device.AndroidAdbBridge
+import dev.pocketportal.application.device.AndroidAdbBridgeResult
+import dev.pocketportal.application.device.OpenAndroidAdbBridge
 import dev.pocketportal.domain.ServiceState
 import dev.pocketportal.domain.SystemStatus
 import dev.pocketportal.domain.PocketPortalConstants
@@ -22,6 +25,9 @@ import dev.pocketportal.domain.device.AndroidScreenState
 import dev.pocketportal.domain.device.DeviceSerial
 import io.ktor.client.request.get
 import io.ktor.client.request.post
+import io.ktor.client.request.header
+import io.ktor.client.plugins.websocket.WebSockets
+import io.ktor.client.plugins.websocket.webSocket
 import io.ktor.client.statement.bodyAsText
 import io.ktor.client.statement.bodyAsBytes
 import io.ktor.http.HttpStatusCode
@@ -31,6 +37,8 @@ import io.ktor.server.testing.testApplication
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
+import kotlinx.coroutines.awaitCancellation
+import io.ktor.websocket.close
 
 class PocketPortalWebTest {
     @Test
@@ -231,6 +239,74 @@ class PocketPortalWebTest {
         assertTrue(response.bodyAsText().contains("\"detail\":\"device_not_online\""))
     }
 
+    @Test
+    fun `adb bridge rejects a missing bearer token without opening a device`() =
+        testApplication {
+            var opened = false
+            application {
+                pocketPortalWeb(
+                    getSystemStatus = readyStatus(),
+                    getAndroidDevices = GetAndroidDevices {
+                        DeviceDiscoveryResult.Available(emptyList())
+                    },
+                    getAndroidDeviceScreenshot = unavailableScreenshot(),
+                    wakeAndroidDevice = unavailableWake(),
+                    openAndroidAdbBridge = OpenAndroidAdbBridge {
+                        opened = true
+                        AndroidAdbBridgeResult.Opened(waitingBridge())
+                    },
+                    adbBridgeToken = BRIDGE_TOKEN,
+                )
+            }
+            val webSocketClient = createClient {
+                install(WebSockets)
+            }
+
+            webSocketClient.webSocket("/api/devices/$DEVICE_SERIAL/adb") {
+                incoming.receiveCatching()
+            }
+
+            assertEquals(false, opened)
+        }
+
+    @Test
+    fun `adb bridge opens one validated device with the configured bearer token`() =
+        testApplication {
+            var openedSerial: DeviceSerial? = null
+            application {
+                pocketPortalWeb(
+                    getSystemStatus = readyStatus(),
+                    getAndroidDevices = GetAndroidDevices {
+                        DeviceDiscoveryResult.Available(emptyList())
+                    },
+                    getAndroidDeviceScreenshot = unavailableScreenshot(),
+                    wakeAndroidDevice = unavailableWake(),
+                    openAndroidAdbBridge = OpenAndroidAdbBridge { serial ->
+                        openedSerial = serial
+                        AndroidAdbBridgeResult.Opened(waitingBridge())
+                    },
+                    adbBridgeToken = BRIDGE_TOKEN,
+                )
+            }
+            val webSocketClient = createClient {
+                install(WebSockets)
+            }
+
+            webSocketClient.webSocket(
+                urlString = "/api/devices/$DEVICE_SERIAL/adb",
+                request = {
+                    header(
+                        WebConstants.AUTHORIZATION_HEADER,
+                        WebConstants.BEARER_PREFIX + BRIDGE_TOKEN,
+                    )
+                },
+            ) {
+                close()
+            }
+
+            assertEquals(DeviceSerial(DEVICE_SERIAL), openedSerial)
+        }
+
     private fun readyStatus() = GetSystemStatus {
         SystemStatus(
             service = PocketPortalConstants.SERVICE_NAME,
@@ -247,6 +323,12 @@ class PocketPortalWebTest {
         DeviceWakeResult.Failed(DeviceWakeFailure.DEVICE_NOT_FOUND)
     }
 
+    private fun waitingBridge() = object : AndroidAdbBridge {
+        override suspend fun read(destination: ByteArray): Int = awaitCancellation()
+        override suspend fun write(source: ByteArray) = Unit
+        override suspend fun close() = Unit
+    }
+
     private companion object {
         const val OBSERVED_AT = 789L
         const val DEVICE_SERIAL = "ABC123"
@@ -256,6 +338,7 @@ class PocketPortalWebTest {
         const val ANDROID_VERSION = "13"
         const val SDK_LEVEL = 33
         const val BATTERY_PERCENTAGE = 75
+        const val BRIDGE_TOKEN = "bridge-token"
         val PNG_BYTES = byteArrayOf(0x89.toByte(), 0x50, 0x4E, 0x47)
     }
 }

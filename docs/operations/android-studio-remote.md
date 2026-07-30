@@ -85,15 +85,51 @@ explicit.
     Android's per-client authorization, never port-forward the device from the
     router, and disable network ADB when the development session ends.
 
-## Future client setup
+## PocketPortal Connect prototype
 
-PocketPortal should eventually provide a small client-side setup helper around
-the proven per-device transport. It must not automate the failed shared
-remote-server approach. A future helper should:
+The repository now contains the first `pocketportal-connect` CLI and a
+disabled-by-default server bridge. Unlike the SSH proof, the bridge accepts
+only binary ADB traffic for one validated device serial. It does not provide a
+Linux shell or arbitrary network forwarding.
+
+Build the client distribution with:
+
+```bash
+./gradlew :connect:installDist
+```
+
+The client listens only on `127.0.0.1`, asks the local ADB daemon to connect to
+that port, and carries the bytes over an authenticated WebSocket:
+
+```bash
+export POCKETPORTAL_CONNECT_TOKEN='a-random-token-with-at-least-32-characters'
+./connect/build/install/pocketportal-connect/bin/pocketportal-connect \
+  --server wss://192.168.0.151:8443 \
+  --serial DEVICE_SERIAL \
+  --ca-certificate /path/to/pocketportal-ca.pem
+```
+
+Non-loopback servers must use `wss://`; unencrypted `ws://` is accepted only
+for loopback development. The server-side bridge is enabled with
+`android.bridge.enabled=true` and reads its token only from
+`POCKETPORTAL_ADB_BRIDGE_TOKEN`.
+
+Managed computers may use TLS inspection. The client uses the JVM trust store
+by default and combines it with the optional PEM bundle supplied through
+`--ca-certificate`. A company CA already installed into Java therefore
+continues to work, while the PEM bundle trusts PocketPortal's private
+host-specific certificate when traffic is not intercepted.
+
+!!! warning
+    TLS support, setup tooling, local ADB connectivity, and clean USB
+    restoration have passed their first live Pixel validation. Do not expose
+    the plaintext HTTP connector or bridge through router port forwarding.
+
+The implementation preserves these requirements:
 
 - Check the Android Studio and server ADB versions before opening a tunnel.
 - Select a free localhost port without replacing the user's normal ADB server.
-- Establish and monitor the SSH or private-network tunnel.
+- Establish and monitor the scoped PocketPortal tunnel.
 - Keep Android Studio attached to its normal local ADB server.
 - Enable, tunnel, reconnect, monitor, and disable one device transport.
 - Track a separate local port for each simultaneous device.

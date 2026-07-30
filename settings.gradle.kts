@@ -17,6 +17,7 @@ rootProject.name = "pocketportal"
 include(
     "app",
     "application",
+    "connect",
     "domain",
     "infrastructure",
     "web",

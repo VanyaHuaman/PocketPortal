@@ -9,6 +9,8 @@ import dev.pocketportal.application.device.DeviceScreenshotResult
 import dev.pocketportal.application.device.DeviceWakeFailure
 import dev.pocketportal.application.device.DeviceWakeResult
 import dev.pocketportal.application.device.WakeAndroidDevice
+import dev.pocketportal.application.device.AndroidAdbBridgeResult
+import dev.pocketportal.application.device.OpenAndroidAdbBridge
 import dev.pocketportal.domain.device.AndroidDevice
 import dev.pocketportal.domain.device.DeviceSerial
 import io.ktor.http.ContentType
@@ -23,17 +25,29 @@ import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import io.ktor.server.routing.routing
 import io.ktor.server.http.content.staticResources
+import io.ktor.server.websocket.WebSockets
+import io.ktor.server.websocket.webSocket
+import io.ktor.websocket.CloseReason
+import io.ktor.websocket.Frame
+import io.ktor.websocket.close
+import io.ktor.websocket.readBytes
+import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
+import java.security.MessageDigest
 
 fun Application.pocketPortalWeb(
     getSystemStatus: GetSystemStatus,
     getAndroidDevices: GetAndroidDevices,
     getAndroidDeviceScreenshot: GetAndroidDeviceScreenshot,
     wakeAndroidDevice: WakeAndroidDevice,
+    openAndroidAdbBridge: OpenAndroidAdbBridge? = null,
+    adbBridgeToken: String? = null,
 ) {
     install(ContentNegotiation) {
         json()
     }
+    install(WebSockets)
 
     routing {
         get(WebConstants.STATUS_PATH) {
@@ -120,6 +134,72 @@ fun Application.pocketPortalWeb(
                             detail = result.reason.name.lowercase(),
                         ),
                     )
+            }
+        }
+
+        webSocket(WebConstants.DEVICE_ADB_BRIDGE_PATH) {
+            val configuredToken = adbBridgeToken
+            val suppliedToken = call.request.headers[WebConstants.AUTHORIZATION_HEADER]
+                ?.takeIf { it.startsWith(WebConstants.BEARER_PREFIX) }
+                ?.removePrefix(WebConstants.BEARER_PREFIX)
+            if (
+                configuredToken.isNullOrBlank() ||
+                suppliedToken == null ||
+                !MessageDigest.isEqual(
+                    configuredToken.encodeToByteArray(),
+                    suppliedToken.encodeToByteArray(),
+                )
+            ) {
+                close(
+                    CloseReason(
+                        CloseReason.Codes.VIOLATED_POLICY,
+                        WebConstants.ADB_BRIDGE_UNAUTHORIZED_REASON,
+                    ),
+                )
+                return@webSocket
+            }
+
+            val serial = call.parameters[WebConstants.DEVICE_SERIAL_PARAMETER]
+                ?.let {
+                    try {
+                        DeviceSerial(it)
+                    } catch (_: IllegalArgumentException) {
+                        null
+                    }
+                }
+            val bridgeResult = if (serial == null || openAndroidAdbBridge == null) {
+                null
+            } else {
+                openAndroidAdbBridge(serial)
+            }
+            val bridge = (bridgeResult as? AndroidAdbBridgeResult.Opened)?.bridge
+            if (bridge == null) {
+                close(
+                    CloseReason(
+                        CloseReason.Codes.CANNOT_ACCEPT,
+                        WebConstants.ADB_BRIDGE_UNAVAILABLE_REASON,
+                    ),
+                )
+                return@webSocket
+            }
+
+            val deviceToClient = launch {
+                val buffer = ByteArray(WebConstants.ADB_BRIDGE_BUFFER_BYTES)
+                while (true) {
+                    val count = bridge.read(buffer)
+                    if (count < 0) break
+                    send(Frame.Binary(fin = true, data = buffer.copyOf(count)))
+                }
+            }
+            try {
+                for (frame in incoming) {
+                    if (frame is Frame.Binary) {
+                        bridge.write(frame.readBytes())
+                    }
+                }
+            } finally {
+                deviceToClient.cancelAndJoin()
+                bridge.close()
             }
         }
 

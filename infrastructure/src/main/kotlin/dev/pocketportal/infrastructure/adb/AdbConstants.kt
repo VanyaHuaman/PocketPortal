@@ -53,4 +53,10 @@ internal object AdbConstants {
     const val INPUT_COMMAND = "input"
     const val KEY_EVENT_COMMAND = "keyevent"
     const val WAKE_UP_KEY_CODE = "KEYCODE_WAKEUP"
+    const val IP_COMMAND = "ip"
+    const val ROUTE_COMMAND = "route"
+    const val TCPIP_COMMAND = "tcpip"
+    const val USB_COMMAND = "usb"
+    const val NETWORK_ADB_PORT = 5555
+    const val ROUTE_SOURCE_MARKER = "src"
 }

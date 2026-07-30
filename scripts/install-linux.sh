@@ -22,6 +22,7 @@ current_link="$data_dir/current"
 binary_link="$binary_dir/pocketportal"
 service_file="$systemd_dir/$POCKETPORTAL_SERVICE_NAME"
 config_file="$config_dir/pocketportal.properties"
+secret_environment_file="$config_dir/pocketportal.env"
 archive=""
 version=""
 operation="install"
@@ -249,6 +250,10 @@ fi
 
 if [[ ! -f "$config_file" ]]; then
   cp "$project_dir/deploy/linux/pocketportal.properties" "$config_file"
+fi
+if [[ ! -f "$secret_environment_file" ]]; then
+  cp "$project_dir/deploy/linux/pocketportal.env" "$secret_environment_file"
+  chmod 600 "$secret_environment_file"
 fi
 cp "$project_dir/deploy/linux/pocketportal.service" "$service_file"
 

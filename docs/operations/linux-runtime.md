@@ -25,9 +25,32 @@ server.host=127.0.0.1
 server.port=8080
 android.adb.path=/usr/bin/adb
 android.adb.timeoutMillis=5000
+android.bridge.enabled=false
 ```
 
 The repository contains this safe starting configuration in `deploy/linux/pocketportal.properties`.
+
+## Configure home-LAN TLS
+
+After installing a bridge-capable release, generate a host-specific
+certificate, PKCS12 key store, bridge token, and owner-only secret environment
+file:
+
+```bash
+./scripts/configure-linux-tls.sh --host 192.168.0.151
+systemctl --user restart pocketportal.service
+```
+
+The script keeps plaintext HTTP on `127.0.0.1`, binds HTTPS/WSS only to the
+specified private address on port `8443`, enables the limited ADB bridge, and
+refuses to overwrite existing TLS material. Copy the generated public
+certificate from:
+
+```text
+~/.config/pocketportal/tls/pocketportal-ca.pem
+```
+
+Never copy `pocketportal.p12` or `pocketportal.env` to a client.
 
 ## User service layout
 
@@ -42,6 +65,7 @@ The current user-owned deployment layout is:
         └── lib/
 
 ~/.config/pocketportal/pocketportal.properties
+~/.config/pocketportal/pocketportal.env
 ~/.config/systemd/user/pocketportal.service
 ```
 

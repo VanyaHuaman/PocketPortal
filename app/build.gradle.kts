@@ -19,7 +19,7 @@ dependencies {
     implementation(project(":domain"))
     implementation(project(":infrastructure"))
     implementation(project(":web"))
-    implementation(libs.ktor.server.cio)
+    implementation(libs.ktor.server.netty)
     implementation(libs.logback.classic)
     testImplementation(kotlin("test"))
 }

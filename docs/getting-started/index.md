@@ -2,8 +2,9 @@
 
 PocketPortal currently provides a single-owner web dashboard, Android device
 discovery and observations, bounded screenshots, and a safe wake action.
-Tailscale-private access and application installation are planned next;
-PocketPortal-managed authentication and leases are deferred to V2.
+Trusted-home-LAN access and application installation are planned next.
+PocketPortal-managed authentication, leases, test runners, and off-LAN access
+are deferred to V2.
 
 ## Requirements
 
