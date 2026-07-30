@@ -1,0 +1,154 @@
+import { useCallback, useEffect, useRef, useState } from "react";
+import { DASHBOARD_CONSTANTS, DEVICE_STATES } from "./constants";
+import { fetchDevices } from "./deviceApi";
+import type { AndroidDevice } from "./types";
+
+type LoadState = "loading" | "ready" | "error";
+
+function formatModel(model: string | null): string {
+  return model?.replaceAll("_", " ") ?? DASHBOARD_CONSTANTS.unknownModelLabel;
+}
+
+function DeviceCard({ device }: { device: AndroidDevice }) {
+  const isOnline = device.state === DEVICE_STATES.online;
+
+  return (
+    <article className="device-card">
+      <div className="device-visual" aria-hidden="true">
+        <span className="speaker" />
+        <span className="android-mark">A</span>
+        <span className={`signal ${isOnline ? "signal-online" : ""}`} />
+      </div>
+      <div className="device-copy">
+        <div className="device-heading">
+          <div>
+            <p className="eyebrow">{device.product ?? "Android"}</p>
+            <h2>{formatModel(device.model)}</h2>
+          </div>
+          <span className={`state-badge state-${device.state}`}>{device.state}</span>
+        </div>
+        <dl>
+          <div>
+            <dt>Serial</dt>
+            <dd>{device.serial}</dd>
+          </div>
+          <div>
+            <dt>Connection</dt>
+            <dd>USB · ADB</dd>
+          </div>
+        </dl>
+      </div>
+    </article>
+  );
+}
+
+export default function App() {
+  const [devices, setDevices] = useState<AndroidDevice[]>([]);
+  const [loadState, setLoadState] = useState<LoadState>("loading");
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  const activeRequest = useRef<AbortController | null>(null);
+
+  const refresh = useCallback(async () => {
+    activeRequest.current?.abort();
+    const controller = new AbortController();
+    activeRequest.current = controller;
+
+    try {
+      const response = await fetchDevices(controller.signal);
+      setDevices(response.devices);
+      setLastUpdated(new Date());
+      setLoadState("ready");
+    } catch (error) {
+      if (error instanceof DOMException && error.name === "AbortError") return;
+      setLoadState("error");
+    }
+  }, []);
+
+  useEffect(() => {
+    void refresh();
+    const timer = window.setInterval(
+      () => void refresh(),
+      DASHBOARD_CONSTANTS.refreshIntervalMilliseconds,
+    );
+
+    return () => {
+      window.clearInterval(timer);
+      activeRequest.current?.abort();
+    };
+  }, [refresh]);
+
+  return (
+    <main>
+      <header className="masthead">
+        <a className="brand" href="/" aria-label="PocketPortal dashboard">
+          <span className="brand-glyph">P</span>
+          <span>PocketPortal</span>
+        </a>
+        <div className="lab-status">
+          <span className="pulse" />
+          Lab connected
+        </div>
+      </header>
+
+      <section className="hero">
+        <p className="kicker">Physical device lab</p>
+        <div className="hero-row">
+          <div>
+            <h1>Your devices,<br />within reach.</h1>
+            <p className="hero-description">
+              A quiet command center for the Android hardware connected to your home lab.
+            </p>
+          </div>
+          <div className="device-count" aria-label={`${devices.length} connected devices`}>
+            <strong>{devices.length.toString().padStart(2, "0")}</strong>
+            <span>devices visible</span>
+          </div>
+        </div>
+      </section>
+
+      <section className="devices-section" aria-labelledby="devices-title">
+        <div className="section-heading">
+          <div>
+            <p className="eyebrow">Live inventory</p>
+            <h2 id="devices-title">Android devices</h2>
+          </div>
+          <div className="refresh-area">
+            <span aria-live="polite">
+              {lastUpdated ? `Updated ${lastUpdated.toLocaleTimeString()}` : "Connecting…"}
+            </span>
+            <button type="button" onClick={() => void refresh()}>
+              Refresh
+            </button>
+          </div>
+        </div>
+
+        {loadState === "loading" && (
+          <div className="message-card" role="status">Finding your connected devices…</div>
+        )}
+        {loadState === "error" && (
+          <div className="message-card error-card" role="alert">
+            <strong>We couldn’t reach ADB.</strong>
+            <span>{DASHBOARD_CONSTANTS.unavailableMessage}</span>
+            <button type="button" onClick={() => void refresh()}>Try again</button>
+          </div>
+        )}
+        {loadState === "ready" && devices.length === 0 && (
+          <div className="message-card">
+            <strong>No Android devices are visible yet.</strong>
+            <span>Connect a device and authorize USB debugging to see it here.</span>
+          </div>
+        )}
+        {loadState === "ready" && devices.length > 0 && (
+          <div className="device-grid">
+            {devices.map((device) => <DeviceCard key={device.serial} device={device} />)}
+          </div>
+        )}
+      </section>
+
+      <footer>
+        <span>POCKETPORTAL / LOCAL LAB</span>
+        <span>Read-only preview</span>
+      </footer>
+    </main>
+  );
+}

@@ -71,6 +71,29 @@ class PocketPortalWebTest {
         )
     }
 
+    @Test
+    fun `root serves the dashboard`() = testApplication {
+        application {
+            pocketPortalWeb(
+                getSystemStatus = GetSystemStatus {
+                    SystemStatus(
+                        service = PocketPortalConstants.SERVICE_NAME,
+                        state = ServiceState.READY,
+                        observedAtEpochMillis = OBSERVED_AT,
+                    )
+                },
+                getAndroidDevices = GetAndroidDevices {
+                    DeviceDiscoveryResult.Available(emptyList())
+                },
+            )
+        }
+
+        val response = client.get(WebConstants.FRONTEND_ROUTE)
+
+        assertEquals(HttpStatusCode.OK, response.status)
+        assertTrue(response.bodyAsText().contains("<title>PocketPortal</title>"))
+    }
+
     private companion object {
         const val OBSERVED_AT = 789L
     }

@@ -12,6 +12,7 @@ import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.server.response.respond
 import io.ktor.server.routing.get
 import io.ktor.server.routing.routing
+import io.ktor.server.http.content.staticResources
 import kotlinx.serialization.Serializable
 
 fun Application.pocketPortalWeb(
@@ -55,6 +56,12 @@ fun Application.pocketPortalWeb(
                     )
             }
         }
+
+        staticResources(
+            remotePath = WebConstants.FRONTEND_ROUTE,
+            basePackage = WebConstants.FRONTEND_RESOURCE_PACKAGE,
+            index = WebConstants.FRONTEND_INDEX_FILE,
+        )
     }
 }
 

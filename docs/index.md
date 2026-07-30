@@ -5,8 +5,10 @@ PocketPortal is a self-hosted control plane for a physical mobile-device lab. It
 ## Current capabilities
 
 - A clean-architecture Kotlin/Ktor service
+- A responsive, read-only React dashboard served by the same application
 - Typed Android discovery through ADB
 - Safe reporting of online, offline, unauthorized, and other device states
+- Automatic device refresh with explicit loading, empty, and recovery states
 - Runtime configuration through properties and environment overrides
 - Automated unit, adapter, API, and clean-room installation tests
 
