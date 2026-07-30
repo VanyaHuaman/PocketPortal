@@ -27,6 +27,11 @@ The platform must remain application-project agnostic. PocketPortal does not mod
 - `GET /api/devices` parses bounded `adb devices -l` output into typed states and returns safe service-unavailable errors for a missing, timed-out, or failed ADB process.
 - Unit and API tests cover serial validation, the discovery use case, ADB parsing, gateway failure mapping, configuration, and web error mapping.
 - Live discovery was verified against an attached Android device, including correct reporting of its unauthorized state.
+- The first real Ubuntu runtime deployment is installed as an enabled user systemd service under `~/.local/share/pocketportal`.
+- The service uses an external config in `~/.config/pocketportal`, binds only to localhost, and is intentionally unreachable through the server's LAN address.
+- The authorized Pixel 4 XL is reported online by the live `/api/devices` endpoint.
+- The server needs only a Java runtime for artifact deployment. Its source checkout cannot build without a JDK, which confirms that build and runtime prerequisites must remain distinct in the installer and doctor.
+- An initial JVM crash occurred on Ubuntu kernel `6.17.0-40` alongside hundreds of unrelated process segfaults. After rebooting into `6.17.0-41`, the complete workload and running service produced zero segfaults. Continue monitoring before declaring the host fully stable.
 - `./testing/clean-room/run.sh` builds and tests in a fresh Linux JDK image, assembles the distribution, starts it as a non-root user in a clean JRE image with external configuration, probes readiness, and removes the temporary container.
 - The Podman clean-room test passed end to end on July 29, 2026, including graceful missing-ADB behavior.
 - A public-facing MkDocs Material site now lives in `docs`, builds strictly with `./scripts/docs.sh build`, and has a GitHub Pages workflow.

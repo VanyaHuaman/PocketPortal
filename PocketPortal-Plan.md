@@ -844,6 +844,9 @@ PocketPortal's first useful release is successful when:
 - [ ] Authorize all Android devices for USB debugging.
 - [x] Implement the first clean-architecture ADB discovery slice with typed device states, bounded execution, configuration, safe failures, and automated tests.
 - [x] Verify live discovery against an attached device and verify missing-ADB behavior in the Podman clean room.
+- [x] Deploy the first runtime artifact to the Ubuntu host as an enabled user systemd service bound only to localhost.
+- [x] Verify the real Ubuntu service reports the authorized Pixel 4 XL online while refusing LAN connections to the unauthenticated API.
+- [ ] Replace the validated manual runtime procedure with a resumable installer, prerequisite doctor, versioned upgrades, and rollback.
 - [ ] Test all Android devices with scrcpy.
 - [ ] Test several simultaneous scrcpy sessions.
 - [ ] Verify APK metadata inspection with representative debug and release builds.

@@ -39,6 +39,7 @@ nav:
   - API: api.md
   - Architecture: architecture.md
   - Operations:
+      - Ubuntu runtime: operations/ubuntu-runtime.md
       - Clean-room testing: operations/clean-room.md
 
 markdown_extensions:
