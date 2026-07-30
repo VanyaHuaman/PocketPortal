@@ -101,13 +101,21 @@ token over SSH, and stores that token in the current user's login Keychain:
 ```bash
 ./scripts/connect-macos.sh \
   --server wss://192.168.0.151:8443 \
-  --ssh-target vanya@192.168.0.151 \
-  --serial DEVICE_SERIAL
+  --ssh-target vanya@192.168.0.151
 ```
 
 The first run may request SSH and Keychain approval. Subsequent runs reuse the
-certificate and Keychain credential. To shorten the recurring command, set
-these in the shell profile:
+certificate and Keychain credential. If more than one device is online, the
+launcher presents a numbered picker. A model-based identifier is also accepted:
+
+```bash
+./scripts/connect-macos.sh \
+  --server wss://192.168.0.151:8443 \
+  --ssh-target vanya@192.168.0.151 \
+  --device pixel-4-xl
+```
+
+To shorten the recurring command, set these in the shell profile:
 
 ```bash
 export POCKETPORTAL_CONNECT_SERVER='wss://192.168.0.151:8443'
@@ -117,7 +125,7 @@ export POCKETPORTAL_CONNECT_SSH_TARGET='vanya@192.168.0.151'
 Then connecting a device requires only:
 
 ```bash
-./scripts/connect-macos.sh --serial DEVICE_SERIAL
+./scripts/connect-macos.sh
 ```
 
 The underlying client listens only on `127.0.0.1`, asks the local ADB daemon

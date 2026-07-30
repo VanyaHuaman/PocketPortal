@@ -14,6 +14,7 @@ keychain_service="dev.pocketportal.connect"
 server="${POCKETPORTAL_CONNECT_SERVER:-}"
 ssh_target="${POCKETPORTAL_CONNECT_SSH_TARGET:-}"
 serial=""
+device_name=""
 local_port="$default_local_port"
 adb_path="${POCKETPORTAL_CONNECT_ADB:-}"
 ca_file="${POCKETPORTAL_CONNECT_CA_CERTIFICATE:-$default_ca_file}"
@@ -21,7 +22,8 @@ ca_file="${POCKETPORTAL_CONNECT_CA_CERTIFICATE:-$default_ca_file}"
 usage() {
   cat <<EOF
 Usage:
-  $0 --server wss://HOST:PORT --ssh-target USER@HOST --serial DEVICE_SERIAL
+  $0 --server wss://HOST:PORT --ssh-target USER@HOST
+     [--device FRIENDLY_NAME | --serial DEVICE_SERIAL]
      [--local-port PORT] [--adb PATH] [--ca-certificate PATH]
 
 The first run uses SSH to copy the PocketPortal certificate and stores the
@@ -44,6 +46,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     --serial)
       serial="${2:-}"
+      shift 2
+      ;;
+    --device)
+      device_name="${2:-}"
       shift 2
       ;;
     --local-port)
@@ -82,8 +88,8 @@ done
   echo "--ssh-target or POCKETPORTAL_CONNECT_SSH_TARGET is required." >&2
   exit 1
 }
-[[ -n "$serial" ]] || {
-  echo "--serial is required." >&2
+[[ -z "$serial" || -z "$device_name" ]] || {
+  echo "Use either --device or --serial, not both." >&2
   exit 1
 }
 [[ "$local_port" =~ ^[0-9]+$ ]] || {
@@ -135,6 +141,66 @@ if [[ ! -f "$ca_file" ]]; then
   echo "Copying the PocketPortal certificate from $ssh_target..."
   scp "$ssh_target:$remote_ca_file" "$ca_file"
   chmod 600 "$ca_file"
+fi
+
+select_device() {
+  local api_server
+  local inventory_file
+  local selected
+  local selection
+  local devices=()
+
+  api_server="${server/#wss:/https:}"
+  inventory_file="$(mktemp "${TMPDIR:-/tmp}/pocketportal-devices.XXXXXX")"
+  trap 'rm -f "$inventory_file"' EXIT
+  if ! curl --fail --silent \
+    --cacert "$ca_file" \
+    "$api_server/api/devices" >"$inventory_file"; then
+    # Managed Macs may terminate TLS with an employer CA installed in curl's
+    # normal trust configuration instead of presenting PocketPortal's CA.
+    curl --fail --silent --show-error \
+      "$api_server/api/devices" >"$inventory_file"
+  fi
+
+  while IFS= read -r selected; do
+    devices+=("$selected")
+  done < <(
+    osascript -l JavaScript \
+      "$project_dir/scripts/connect-device-picker.js" \
+      "$inventory_file" \
+      "$device_name"
+  )
+
+  if [[ -n "$device_name" ]]; then
+    if [[ "${#devices[@]}" -ne 1 ]]; then
+      echo "No unique online device matches '$device_name'." >&2
+      return 1
+    fi
+    serial="${devices[0]%%	*}"
+    return
+  fi
+
+  [[ "${#devices[@]}" -gt 0 ]] || {
+    echo "PocketPortal has no online Android devices." >&2
+    return 1
+  }
+  echo "PocketPortal devices:"
+  local index
+  for ((index = 0; index < ${#devices[@]}; index++)); do
+    printf '  %d. %s\n' "$((index + 1))" "${devices[$index]#*	}"
+  done
+  printf "Select a device [1-%d]: " "${#devices[@]}"
+  read -r selection
+  [[ "$selection" =~ ^[0-9]+$ ]] &&
+    ((selection >= 1 && selection <= ${#devices[@]})) || {
+    echo "Invalid device selection." >&2
+    return 1
+  }
+  serial="${devices[$((selection - 1))]%%	*}"
+}
+
+if [[ -z "$serial" ]]; then
+  select_device
 fi
 
 token="$(security find-generic-password \

@@ -117,7 +117,9 @@ focused on devices, browser control, and application installation.
 - `scripts/connect-macos.sh` provides the first low-friction client launcher.
   It builds Connect when missing, discovers ADB from the Android SDK or `PATH`,
   bootstraps the server certificate and bridge token over SSH on first use,
-  stores the token in the macOS login Keychain, and starts the scoped tunnel.
+  stores the token in the macOS login Keychain, discovers online devices from
+  the API, accepts readable model identifiers such as `pixel-4-xl`, presents a
+  numbered picker when no device is supplied, and starts the scoped tunnel.
 - The live server currently reports two USB Android devices: Pixel 4 XL serial
   `9B011FFBA00A1L` and Lenovo TB336FU serial `HNY09D8P`.
 - Android observations now classify phone and tablet form factors from physical
