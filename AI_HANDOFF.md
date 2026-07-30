@@ -20,6 +20,7 @@ The platform must remain application-project agnostic. PocketPortal does not mod
 - A minimal `/api/status` vertical slice proves domain-to-use-case-to-web-adapter composition.
 - Tests cover the domain model, status use case, Ktor route, and configuration override behavior.
 - The checked-in Gradle 8.14.4 wrapper builds successfully with Kotlin 2.4.10 and Ktor 3.5.1.
+- Builds use the installed Java 17-or-newer JDK while targeting Java 17-compatible bytecode; do not force provisioning of a separate Java 17 toolchain.
 - `./scripts/bootstrap.sh` performs prerequisite checks and runs the complete build.
 - A runtime smoke test returned a valid ready response from the configured status endpoint.
 - The first Android device-discovery slice is implemented through domain, application, infrastructure, web, and composition-root boundaries.

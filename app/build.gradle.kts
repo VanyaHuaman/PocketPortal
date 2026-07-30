@@ -3,10 +3,6 @@ plugins {
     application
 }
 
-kotlin {
-    jvmToolchain(17)
-}
-
 application {
     mainClass.set("dev.pocketportal.app.MainKt")
 }

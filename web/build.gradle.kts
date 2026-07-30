@@ -3,10 +3,6 @@ plugins {
     alias(libs.plugins.kotlin.serialization)
 }
 
-kotlin {
-    jvmToolchain(17)
-}
-
 dependencies {
     implementation(project(":application"))
     implementation(project(":domain"))
