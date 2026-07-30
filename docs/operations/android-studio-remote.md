@@ -102,4 +102,7 @@ remote-server approach. A future helper should:
 - Avoid storing passwords or exposing ADB beyond localhost.
 
 The first end-to-end validation used a Pixel 4 XL on Android 13, a Linux host,
-and Android Studio on macOS.
+and Android Studio on macOS. The user successfully interacted with the device,
+installed an application, and launched it from Android Studio. Installation and
+launch took several seconds, so this workflow should be treated as functional
+but not assumed to match direct-USB performance.

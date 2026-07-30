@@ -874,6 +874,7 @@ PocketPortal's first useful release is successful when:
 - [x] Replace the validated manual runtime procedure with a resumable installer, prerequisite doctor, versioned upgrades, health verification, automatic failure recovery, and explicit rollback.
 - [ ] Test all Android devices with scrcpy.
 - [x] Prove a Mac Android Studio session using local ADB plus a per-device network ADB tunnel without sharing PocketPortal's server daemon.
+- [x] Verify interactive device access plus application installation and launch from Mac Android Studio through the per-device tunnel.
 - [ ] Turn the validated per-device tunnel into an optional, version-aware client setup helper with explicit teardown.
 - [ ] Test several simultaneous scrcpy sessions.
 - [ ] Verify APK metadata inspection with representative debug and release builds.
