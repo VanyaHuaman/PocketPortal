@@ -66,26 +66,49 @@ class LinuxHostDiagnosticsGateway internal constructor(
             .orEmpty()
         val id = values[DiagnosticConstants.OS_ID_KEY]
         val version = values[DiagnosticConstants.OS_VERSION_KEY]
+        val prettyName = values[DiagnosticConstants.OS_PRETTY_NAME_KEY]
+            ?: listOfNotNull(id, version).joinToString(" ")
+                .ifBlank { DiagnosticConstants.UNKNOWN_VALUE }
+        val release = listOfNotNull(id, version).joinToString(":")
+        val relatedFamilies = values[DiagnosticConstants.OS_ID_LIKE_KEY]
+            ?.split(' ')
+            .orEmpty()
+            .toSet()
+        val recognizedFamily = id in DiagnosticConstants.RECOGNIZED_LINUX_FAMILIES ||
+            relatedFamilies.any(DiagnosticConstants.RECOGNIZED_LINUX_FAMILIES::contains)
 
         return when {
-            id != DiagnosticConstants.UBUNTU_ID ->
+            id == null ->
                 fail(
                     DiagnosticConstants.OPERATING_SYSTEM_CHECK_ID,
-                    "Ubuntu is required for the supported host installer",
-                    "Detected ${id ?: DiagnosticConstants.UNKNOWN_VALUE}",
+                    "A Linux host with /etc/os-release is required",
                 )
 
-            version in DiagnosticConstants.SUPPORTED_UBUNTU_VERSIONS ->
+            release in DiagnosticConstants.END_OF_LIFE_LINUX_RELEASES ->
+                warn(
+                    DiagnosticConstants.OPERATING_SYSTEM_CHECK_ID,
+                    "$prettyName is end-of-life",
+                    "PocketPortal is portable across Linux, but this host should be upgraded",
+                )
+
+            release in DiagnosticConstants.VERIFIED_LINUX_RELEASES ->
                 pass(
                     DiagnosticConstants.OPERATING_SYSTEM_CHECK_ID,
-                    "Ubuntu $version is supported",
+                    "$prettyName is a verified Linux host",
+                )
+
+            recognizedFamily ->
+                warn(
+                    DiagnosticConstants.OPERATING_SYSTEM_CHECK_ID,
+                    "$prettyName is an unverified Linux release",
+                    "Core prerequisites are checked independently; distribution-specific setup may vary",
                 )
 
             else ->
                 warn(
                     DiagnosticConstants.OPERATING_SYSTEM_CHECK_ID,
-                    "Ubuntu $version is outside the tested support matrix",
-                    "Supported versions: ${DiagnosticConstants.SUPPORTED_UBUNTU_VERSIONS.sorted().joinToString()}",
+                    "$prettyName is an unverified Linux distribution",
+                    "PocketPortal requires Java, ADB, and a user systemd manager",
                 )
         }
     }

@@ -8,7 +8,7 @@ This document gives a new AI assistant enough context to continue PocketPortal w
 
 ## Project summary
 
-PocketPortal is a self-hosted mobile device lab for six physical Android devices and one iPhone. The Ubuntu home server is the always-on Android host. Users should eventually be able to monitor devices, obtain exclusive control, install test applications, and run approved Maestro or Appium tests remotely.
+PocketPortal is a self-hosted mobile device lab for six physical Android devices and one iPhone. A Linux home server is the always-on Android host; the user's current machine runs Ubuntu. Users should eventually be able to monitor devices, obtain exclusive control, install test applications, and run approved Maestro or Appium tests remotely.
 
 The platform must remain application-project agnostic. PocketPortal does not model source repositories, projects, workspaces, or tenants in V1. It manages users, devices, application artifacts, approved test suites, leases, runs, and audit events. Package metadata and tags provide organization.
 
@@ -30,11 +30,11 @@ The platform must remain application-project agnostic. PocketPortal does not mod
 - The first real Ubuntu runtime deployment is installed as an enabled user systemd service under `~/.local/share/pocketportal`.
 - The service uses an external config in `~/.config/pocketportal`, binds only to localhost, and is intentionally unreachable through the server's LAN address.
 - The authorized Pixel 4 XL is reported online by the live `/api/devices` endpoint.
-- `pocketportal doctor` now checks Ubuntu support, Java, ADB, connected devices, user systemd, lingering, service state, and current-boot kernel segfaults through tested clean-architecture boundaries.
-- `scripts/install-ubuntu.sh` provides resumable installation and upgrade, immutable version activation, API health checks, automatic restoration after failed health checks, and explicit rollback.
-- Version `0.1.1-SNAPSHOT` is active on the real server. Upgrade from and rollback to `0.1.0-SNAPSHOT` were both verified, followed by restoration of `0.1.1-SNAPSHOT`.
+- `pocketportal doctor` now checks Linux distribution confidence, Java, ADB, connected devices, user systemd, lingering, service state, and current-boot kernel segfaults through tested clean-architecture boundaries.
+- `scripts/install-linux.sh` provides distribution-neutral resumable installation and upgrade, immutable version activation, API health checks, automatic restoration after failed health checks, and explicit rollback. The old `install-ubuntu.sh` entrypoint is a compatibility wrapper.
+- Version `0.1.3-SNAPSHOT` is active on the real server. Earlier upgrade and rollback behavior was verified between `0.1.0` and `0.1.1`; subsequent dashboard and generalized-Linux releases were deployed through the same versioned upgrade path.
 - The installed `~/.local/bin/pocketportal doctor` finds the conventional user config automatically. On the server it reports one authorized Pixel 4 XL, active service, enabled lingering, and zero current-boot segfaults.
-- Ubuntu 25.10 is outside the tested `24.04`/`26.04` support matrix and is end-of-life, so installation requires `--allow-unsupported-os` and doctor emits a warning.
+- Ubuntu 25.10 is the first real-host validation but is end-of-life, so doctor and the generalized installer emit an upgrade warning.
 - The server needs only a Java runtime for artifact deployment. Its source checkout cannot build without a JDK, which confirms that build and runtime prerequisites must remain distinct in the installer and doctor.
 - An initial JVM crash occurred on Ubuntu kernel `6.17.0-40` alongside hundreds of unrelated process segfaults. After rebooting into `6.17.0-41`, the complete workload and running service produced zero segfaults. Continue monitoring before declaring the host fully stable.
 - `./testing/clean-room/run.sh` builds and tests in a fresh Linux JDK image, assembles the distribution, starts it as a non-root user in a clean JRE image with external configuration, probes readiness, and removes the temporary container.
@@ -76,7 +76,7 @@ The platform must remain application-project agnostic. PocketPortal does not mod
 - Private networking: Tailscale
 - Process supervision: systemd
 - TLS/reverse proxy: Caddy or Tailscale-native HTTPS
-- Deployment: run directly on Ubuntu for V1; do not put the hardware-facing service in Docker
+- Deployment: run directly on Linux with user systemd for V1; do not put the hardware-facing service in Docker
 - Authentication: Tailscale identity where practical, followed by a PocketPortal application session
 
 The Ktor service should serve the compiled React application so V1 deploys as one application service.
@@ -93,7 +93,7 @@ Separate projects communicate through small authenticated and versioned contract
 
 Runtime defaults currently live in `config/pocketportal.properties` and are packaged into the application. `POCKETPORTAL_CONFIG` selects an external file. Server and ADB values have targeted environment overrides. New runtime settings must use the same typed and validated configuration boundary. Named constants live with the module that owns their meaning.
 
-The clean-room harness lives in `testing/clean-room`. It is installation-test infrastructure, not the production deployment model. Its settings are in `clean-room.env`, it targets a named Podman connection, and it uses a unique temporary container name. Continue to deploy the hardware-facing service directly on Ubuntu. A disposable Ubuntu VM test is still needed for systemd, udev, USB, ADB, scrcpy, upgrade, and rollback behavior.
+The clean-room harness lives in `testing/clean-room`. It is installation-test infrastructure, not the production deployment model. Its settings are in `clean-room.env`, it targets a named Podman connection, and it uses a unique temporary container name. Continue to deploy the hardware-facing service directly on Linux. Disposable Debian- and Fedora-family VM tests are still needed for systemd, udev, USB, ADB, scrcpy, upgrade, and rollback behavior.
 
 The documentation site is public-facing content only. `PocketPortal-Plan.md` and `AI_HANDOFF.md` are not part of MkDocs navigation or output, but they would still be visible as repository source if the GitHub repository is public. Confirm that publication decision before creating a public remote.
 

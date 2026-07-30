@@ -11,9 +11,10 @@ internal object DiagnosticConstants {
     const val SEGFAULT_CHECK_ID = "kernel-segfaults"
 
     const val OS_RELEASE_PATH = "/etc/os-release"
-    const val UBUNTU_ID = "ubuntu"
     const val OS_ID_KEY = "ID"
     const val OS_VERSION_KEY = "VERSION_ID"
+    const val OS_PRETTY_NAME_KEY = "PRETTY_NAME"
+    const val OS_ID_LIKE_KEY = "ID_LIKE"
     const val JAVA_VERSION_PROPERTY = "java.version"
     const val JAVA_VENDOR_PROPERTY = "java.vendor"
     const val USER_ENVIRONMENT_VARIABLE = "USER"
@@ -43,5 +44,17 @@ internal object DiagnosticConstants {
     const val CURRENT_BOOT_ARGUMENT = "-b"
     const val NO_PAGER_ARGUMENT = "--no-pager"
 
-    val SUPPORTED_UBUNTU_VERSIONS = setOf("24.04", "26.04")
+    val VERIFIED_LINUX_RELEASES = setOf("ubuntu:25.10")
+    val END_OF_LIFE_LINUX_RELEASES = setOf("ubuntu:25.10")
+    val RECOGNIZED_LINUX_FAMILIES = setOf(
+        "ubuntu",
+        "debian",
+        "fedora",
+        "rhel",
+        "centos",
+        "rocky",
+        "almalinux",
+        "linuxmint",
+        "pop",
+    )
 }

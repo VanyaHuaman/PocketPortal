@@ -477,10 +477,10 @@ The following stack is the committed direction for PocketPortal V1:
 
 ### Runtime layout
 
-V1 will run directly on the Ubuntu host:
+V1 will run directly on a Linux host with user systemd. The current home server happens to run Ubuntu:
 
 ```text
-Ubuntu home server
+Linux home server
 ├── adb
 ├── scrcpy
 ├── PocketPortal Ktor service
@@ -588,7 +588,7 @@ Setup goals:
 - A new development checkout uses one documented bootstrap command.
 - The repository pins build-tool and dependency versions.
 - Bootstrap performs prerequisite checks and runs a representative build and test suite.
-- Ubuntu installation will use one documented installer or package workflow with repeatable systemd and configuration setup.
+- Linux installation will use one documented, distribution-aware workflow with repeatable user-systemd and configuration setup.
 - Startup errors identify the missing or invalid setting and the corrective action.
 - Upgrade and rollback procedures preserve configuration and database state.
 - A diagnostic command will eventually verify Java, ADB, scrcpy, USB permissions, writable paths, database migrations, and network bindings without changing device state.
@@ -871,9 +871,9 @@ PocketPortal's first useful release is successful when:
 - [ ] Add the test harness, representative unit/integration/API tests, and CI quality gates with the first vertical feature.
 - [ ] Record extraction criteria and keep optional worker protocols separate from PocketPortal's internal domain interfaces.
 - [ ] Keep runtime values in typed configuration and module-owned constants; add validation tests with each new setting.
-- [x] Maintain a one-command development bootstrap and provide a tested Ubuntu installer before expanding the lab deployment.
+- [x] Maintain a one-command development bootstrap and provide a tested, distribution-neutral Linux installer before expanding the lab deployment.
 - [x] Add and verify a Podman clean-room test that builds from a fresh Linux image, runs tests, assembles the distribution, starts as a non-root user, loads external configuration, and probes readiness.
-- [ ] Add a disposable Ubuntu VM installation test for systemd, udev, ADB, scrcpy, upgrades, and rollback.
+- [ ] Add disposable Debian- and Fedora-family VM installation tests for systemd, udev, ADB, scrcpy, upgrades, and rollback.
 - [x] Add a strictly validated MkDocs Material documentation site with isolated local setup and a GitHub Pages deployment workflow.
 - [x] Create the public GitHub remote, enable GitHub Actions as the Pages source, and verify the deployed documentation URL.
 

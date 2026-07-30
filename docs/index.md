@@ -40,7 +40,7 @@ PocketPortal is a self-hosted control plane that makes real Android hardware ava
   </div>
   <div class="pp-capability">
     <h3>Tested at every boundary</h3>
-    <p>Unit, component, adapter, API, clean-room, and real Ubuntu host verification keep changes dependable.</p>
+    <p>Unit, component, adapter, API, clean-room, and real Linux host verification keep changes dependable.</p>
   </div>
 
 </div>
@@ -49,7 +49,7 @@ PocketPortal is a self-hosted control plane that makes real Android hardware ava
 
 PocketPortal will remain application-project agnostic. It manages devices, users, artifacts, approved test suites, leases, runs, and audit events without requiring source-code projects or workspaces.
 
-The initial deployment target is an Ubuntu home server with physical Android devices connected through a powered USB hub. The hardware-facing service runs directly on the host so USB, ADB, and scrcpy remain straightforward to operate.
+The initial deployment target is a Linux home server with physical Android devices connected through a powered USB hub. The hardware-facing service runs directly on the host so USB, ADB, and scrcpy remain straightforward to operate. Ubuntu is the first validated distribution, not an application requirement.
 
 !!! note
     PocketPortal is under active development and is not ready for unattended production use.

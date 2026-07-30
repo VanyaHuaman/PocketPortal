@@ -17,4 +17,4 @@ The test:
 7. Verifies safe behavior when ADB is intentionally absent.
 8. Removes the temporary container.
 
-This does not replace an Ubuntu-host installation test. systemd, udev, USB permissions, ADB ownership, scrcpy, upgrades, and rollback require a disposable VM or real Ubuntu host.
+This does not replace a Linux-host installation test. systemd, udev, USB permissions, ADB ownership, scrcpy, upgrades, and rollback require a disposable VM or real host. Ubuntu is currently the first real-host validation.

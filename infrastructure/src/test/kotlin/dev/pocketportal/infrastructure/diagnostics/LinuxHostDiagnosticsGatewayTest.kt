@@ -13,16 +13,24 @@ import kotlin.test.assertTrue
 
 class LinuxHostDiagnosticsGatewayTest {
     @Test
-    fun `reports a healthy supported host`() = runTest {
+    fun `reports healthy prerequisites while warning about an end-of-life host`() = runTest {
         val gateway = gateway(
-            osRelease = "ID=ubuntu\nVERSION_ID=\"24.04\"\n",
+            osRelease = "ID=ubuntu\nVERSION_ID=\"25.10\"\nPRETTY_NAME=\"Ubuntu 25.10\"\n",
             outputs = healthyOutputs(),
         )
 
         val report = gateway.inspect()
 
         assertFalse(report.hasFailures)
-        assertTrue(report.checks.all { it.status == DiagnosticStatus.PASS })
+        assertEquals(
+            DiagnosticStatus.WARN,
+            report.checks.single { it.id == DiagnosticConstants.OPERATING_SYSTEM_CHECK_ID }.status,
+        )
+        assertTrue(
+            report.checks
+                .filterNot { it.id == DiagnosticConstants.OPERATING_SYSTEM_CHECK_ID }
+                .all { it.status == DiagnosticStatus.PASS },
+        )
         assertEquals(DiagnosticConstants.OPERATING_SYSTEM_CHECK_ID, report.checks.first().id)
     }
 
@@ -33,7 +41,7 @@ class LinuxHostDiagnosticsGatewayTest {
             this[ADB_DEVICES_COMMAND] = CommandExecution.ToolNotFound
         }
         val gateway = gateway(
-            osRelease = "ID=ubuntu\nVERSION_ID=\"25.10\"\n",
+            osRelease = "ID=fedora\nVERSION_ID=\"44\"\nPRETTY_NAME=\"Fedora Linux 44\"\n",
             outputs = outputs,
         )
 
@@ -47,6 +55,22 @@ class LinuxHostDiagnosticsGatewayTest {
         assertEquals(
             DiagnosticStatus.FAIL,
             report.checks.single { it.id == DiagnosticConstants.ADB_CHECK_ID }.status,
+        )
+    }
+
+    @Test
+    fun `accepts an unknown Linux distribution with a warning`() = runTest {
+        val gateway = gateway(
+            osRelease = "ID=examplelinux\nVERSION_ID=\"1\"\nPRETTY_NAME=\"Example Linux 1\"\n",
+            outputs = healthyOutputs(),
+        )
+
+        val report = gateway.inspect()
+
+        assertFalse(report.hasFailures)
+        assertEquals(
+            DiagnosticStatus.WARN,
+            report.checks.single { it.id == DiagnosticConstants.OPERATING_SYSTEM_CHECK_ID }.status,
         )
     }
 
@@ -65,7 +89,8 @@ class LinuxHostDiagnosticsGatewayTest {
     }
 
     private fun gateway(
-        osRelease: String = "ID=ubuntu\nVERSION_ID=\"24.04\"\n",
+        osRelease: String =
+            "ID=ubuntu\nVERSION_ID=\"25.10\"\nPRETTY_NAME=\"Ubuntu 25.10\"\n",
         outputs: Map<List<String>, CommandExecution>,
     ) = LinuxHostDiagnosticsGateway(
         adbPath = ADB_PATH,
