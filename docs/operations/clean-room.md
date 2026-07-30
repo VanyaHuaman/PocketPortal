@@ -27,4 +27,6 @@ PocketPortal also builds minimal Debian and Fedora containers around `install-li
 ./testing/linux-compatibility/run.sh
 ```
 
-These checks prove that distribution detection and package-manager guidance work without an Ubuntu-only gate. They intentionally stop at the first missing prerequisite. Containers do not prove user-systemd, lingering, udev, USB, or physical-device behavior; those remain real-host or booted-VM checks.
+These checks first prove that distribution detection and package-manager guidance work without an Ubuntu-only gate. They then use deterministic service and health adapters to exercise initial installation, idempotent reinstallation, versioned upgrade, health-gated activation, automatic restoration after a failed health check, and explicit rollback.
+
+Containers do not prove a real user-systemd manager, lingering, udev, USB, or physical-device behavior; those remain real-host or booted-VM checks.

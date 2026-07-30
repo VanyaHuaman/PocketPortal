@@ -62,7 +62,7 @@ This builds PocketPortal in a fresh Linux JDK image using the normal bootstrap, 
 
 Clean-room settings live in [`testing/clean-room/clean-room.env`](./testing/clean-room/clean-room.env). This harness validates portable application installation; it does not replace Linux-host testing for systemd, udev, USB, ADB, scrcpy, or physical devices.
 
-Minimal Debian and Fedora compatibility containers verify that the Linux installer detects both package-manager families, provides the correct prerequisite guidance, and never rejects them merely for not being Ubuntu:
+Minimal Debian and Fedora compatibility containers verify package-manager guidance and the complete deterministic installer lifecycle: install, idempotent reinstall, upgrade, health-gated activation, automatic failure recovery, and rollback.
 
 ```bash
 ./testing/linux-compatibility/run.sh

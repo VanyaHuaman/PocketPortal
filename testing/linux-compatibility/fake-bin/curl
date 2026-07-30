@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+if [[ "${POCKETPORTAL_TEST_FAIL_HEALTH:-false}" == "true" ]]; then
+  exit 1
+fi

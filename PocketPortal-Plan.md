@@ -873,7 +873,7 @@ PocketPortal's first useful release is successful when:
 - [ ] Keep runtime values in typed configuration and module-owned constants; add validation tests with each new setting.
 - [x] Maintain a one-command development bootstrap and provide a tested, distribution-neutral Linux installer before expanding the lab deployment.
 - [x] Add and verify a Podman clean-room test that builds from a fresh Linux image, runs tests, assembles the distribution, starts as a non-root user, loads external configuration, and probes readiness.
-- [x] Add Debian- and Fedora-family container checks for installer distribution detection and prerequisite guidance.
+- [x] Add Debian- and Fedora-family container checks for distribution detection, prerequisite guidance, install, idempotent reinstall, upgrade, activation, and rollback.
 - [ ] Add disposable Debian- and Fedora-family VM installation tests for systemd, udev, ADB, scrcpy, upgrades, and rollback.
 - [x] Add a strictly validated MkDocs Material documentation site with isolated local setup and a GitHub Pages deployment workflow.
 - [x] Create the public GitHub remote, enable GitHub Actions as the Pages source, and verify the deployed documentation URL.
