@@ -50,4 +50,7 @@ internal object AdbConstants {
     const val EXEC_OUT_COMMAND = "exec-out"
     const val SCREEN_CAPTURE_COMMAND = "screencap"
     const val PNG_OUTPUT_FLAG = "-p"
+    const val INPUT_COMMAND = "input"
+    const val KEY_EVENT_COMMAND = "keyevent"
+    const val WAKE_UP_KEY_CODE = "KEYCODE_WAKEUP"
 }

@@ -25,7 +25,7 @@ The bootstrap checks prerequisites, downloads pinned build dependencies through 
 
 Then open <http://localhost:8080> for the read-only device dashboard.
 
-The dashboard refreshes <http://localhost:8080/api/devices> automatically and shows state, connection type, Android/SDK version, battery and charging status, screen state, observation time, and a bounded low-frequency screenshot for each online device. If a detail query or screenshot fails, discovery remains available with partial data. If ADB itself is unavailable, the dashboard presents a recoverable error without exposing raw process output.
+The dashboard refreshes <http://localhost:8080/api/devices> automatically and shows state, connection type, Android/SDK version, battery and charging status, screen state, observation time, and a bounded low-frequency screenshot for each online device. Its first safe action can wake an online device without toggling or unlocking it. If a detail query, screenshot, or action fails, discovery remains available with partial data and a recoverable error without exposing raw process output.
 
 Use a different port with:
 

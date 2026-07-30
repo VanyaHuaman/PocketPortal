@@ -36,7 +36,7 @@ PocketPortal is a self-hosted control plane that makes real Android hardware ava
   </div>
   <div class="pp-capability">
     <h3>Operationally safe</h3>
-    <p>Validated configuration, bounded processes, explicit recovery states, versioned installation, diagnostics, and rollback.</p>
+    <p>Validated configuration, bounded processes, explicit recovery states, a fixed wake action, versioned installation, diagnostics, and rollback.</p>
   </div>
   <div class="pp-capability">
     <h3>Tested at every boundary</h3>

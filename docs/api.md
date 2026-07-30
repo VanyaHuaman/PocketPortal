@@ -85,3 +85,24 @@ Possible failures are:
 Screenshots contain whatever is visible on the physical device. Keep this
 unauthenticated development endpoint bound to localhost. Remote screenshot
 access belongs behind PocketPortal authentication and a private network.
+
+## Wake Android device
+
+```http
+POST /api/devices/{serial}/actions/wake
+```
+
+For an online device, PocketPortal responds with `204 No Content` after sending
+Android's named `KEYCODE_WAKEUP`. This action wakes the display if needed; it
+does not toggle an already-awake display, dismiss the lock screen, or unlock the
+device.
+
+PocketPortal revalidates the serial against the current ADB inventory and runs
+a fixed argument list under the configured ADB timeout. An unknown device
+returns `404`, a known but non-online device returns `409`, and an ADB execution
+failure returns `503`.
+
+!!! warning
+    The current development endpoint has no application authentication. Keep
+    PocketPortal bound to localhost until identity, permissions, leases, and
+    audit events protect remote device actions.

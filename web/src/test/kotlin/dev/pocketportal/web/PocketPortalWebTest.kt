@@ -7,6 +7,9 @@ import dev.pocketportal.application.device.GetAndroidDevices
 import dev.pocketportal.application.device.GetAndroidDeviceScreenshot
 import dev.pocketportal.application.device.DeviceScreenshotResult
 import dev.pocketportal.application.device.DeviceScreenshotFailure
+import dev.pocketportal.application.device.DeviceWakeFailure
+import dev.pocketportal.application.device.DeviceWakeResult
+import dev.pocketportal.application.device.WakeAndroidDevice
 import dev.pocketportal.domain.ServiceState
 import dev.pocketportal.domain.SystemStatus
 import dev.pocketportal.domain.PocketPortalConstants
@@ -18,6 +21,7 @@ import dev.pocketportal.domain.device.AndroidDeviceState
 import dev.pocketportal.domain.device.AndroidScreenState
 import dev.pocketportal.domain.device.DeviceSerial
 import io.ktor.client.request.get
+import io.ktor.client.request.post
 import io.ktor.client.statement.bodyAsText
 import io.ktor.client.statement.bodyAsBytes
 import io.ktor.http.HttpStatusCode
@@ -44,6 +48,7 @@ class PocketPortalWebTest {
                     DeviceDiscoveryResult.Available(emptyList())
                 },
                 getAndroidDeviceScreenshot = unavailableScreenshot(),
+                wakeAndroidDevice = unavailableWake(),
             )
         }
 
@@ -69,6 +74,7 @@ class PocketPortalWebTest {
                     DeviceDiscoveryResult.Unavailable(DeviceDiscoveryFailure.TOOL_NOT_FOUND)
                 },
                 getAndroidDeviceScreenshot = unavailableScreenshot(),
+                wakeAndroidDevice = unavailableWake(),
             )
         }
 
@@ -120,6 +126,7 @@ class PocketPortalWebTest {
                     )
                 },
                 getAndroidDeviceScreenshot = unavailableScreenshot(),
+                wakeAndroidDevice = unavailableWake(),
             )
         }
 
@@ -147,6 +154,7 @@ class PocketPortalWebTest {
                     DeviceDiscoveryResult.Available(emptyList())
                 },
                 getAndroidDeviceScreenshot = unavailableScreenshot(),
+                wakeAndroidDevice = unavailableWake(),
             )
         }
 
@@ -173,6 +181,7 @@ class PocketPortalWebTest {
                 getAndroidDeviceScreenshot = GetAndroidDeviceScreenshot {
                     DeviceScreenshotResult.Available(PNG_BYTES, OBSERVED_AT)
                 },
+                wakeAndroidDevice = unavailableWake(),
             )
         }
 
@@ -183,8 +192,59 @@ class PocketPortalWebTest {
         assertTrue(response.bodyAsBytes().contentEquals(PNG_BYTES))
     }
 
+    @Test
+    fun `wake endpoint returns no content after the action completes`() = testApplication {
+        application {
+            pocketPortalWeb(
+                getSystemStatus = readyStatus(),
+                getAndroidDevices = GetAndroidDevices {
+                    DeviceDiscoveryResult.Available(emptyList())
+                },
+                getAndroidDeviceScreenshot = unavailableScreenshot(),
+                wakeAndroidDevice = WakeAndroidDevice { DeviceWakeResult.Completed },
+            )
+        }
+
+        val response = client.post("/api/devices/$DEVICE_SERIAL/actions/wake")
+
+        assertEquals(HttpStatusCode.NoContent, response.status)
+    }
+
+    @Test
+    fun `wake endpoint maps an offline device to conflict`() = testApplication {
+        application {
+            pocketPortalWeb(
+                getSystemStatus = readyStatus(),
+                getAndroidDevices = GetAndroidDevices {
+                    DeviceDiscoveryResult.Available(emptyList())
+                },
+                getAndroidDeviceScreenshot = unavailableScreenshot(),
+                wakeAndroidDevice = WakeAndroidDevice {
+                    DeviceWakeResult.Failed(DeviceWakeFailure.DEVICE_NOT_ONLINE)
+                },
+            )
+        }
+
+        val response = client.post("/api/devices/$DEVICE_SERIAL/actions/wake")
+
+        assertEquals(HttpStatusCode.Conflict, response.status)
+        assertTrue(response.bodyAsText().contains("\"detail\":\"device_not_online\""))
+    }
+
+    private fun readyStatus() = GetSystemStatus {
+        SystemStatus(
+            service = PocketPortalConstants.SERVICE_NAME,
+            state = ServiceState.READY,
+            observedAtEpochMillis = OBSERVED_AT,
+        )
+    }
+
     private fun unavailableScreenshot() = GetAndroidDeviceScreenshot {
         DeviceScreenshotResult.Unavailable(DeviceScreenshotFailure.DEVICE_NOT_FOUND)
+    }
+
+    private fun unavailableWake() = WakeAndroidDevice {
+        DeviceWakeResult.Failed(DeviceWakeFailure.DEVICE_NOT_FOUND)
     }
 
     private companion object {

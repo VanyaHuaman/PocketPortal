@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { API_PATHS, DASHBOARD_CONSTANTS, DEVICE_STATES } from "./constants";
-import { fetchDevices } from "./deviceApi";
+import { fetchDevices, wakeDevice } from "./deviceApi";
 import type { AndroidDevice } from "./types";
 
 type LoadState = "loading" | "ready" | "error";
+type WakeState = "idle" | "running" | "completed" | "error";
 
 function formatModel(model: string | null): string {
   return model?.replaceAll("_", " ") ?? DASHBOARD_CONSTANTS.unknownModelLabel;
@@ -19,6 +20,7 @@ function DeviceCard({ device }: { device: AndroidDevice }) {
   const isOnline = device.state === DEVICE_STATES.online;
   const [screenshotRevision, setScreenshotRevision] = useState(() => Date.now());
   const [screenshotAvailable, setScreenshotAvailable] = useState(false);
+  const [wakeState, setWakeState] = useState<WakeState>("idle");
   const batteryLabel = device.batteryPercentage == null
     ? DASHBOARD_CONSTANTS.unknownValueLabel
     : `${device.batteryPercentage}%`;
@@ -40,6 +42,16 @@ function DeviceCard({ device }: { device: AndroidDevice }) {
 
   const screenshotUrl =
     `${API_PATHS.deviceScreenshot(device.serial)}?revision=${screenshotRevision}`;
+  const wake = async () => {
+    setWakeState("running");
+    try {
+      await wakeDevice(device.serial);
+      setWakeState("completed");
+      setScreenshotRevision(Date.now());
+    } catch {
+      setWakeState("error");
+    }
+  };
 
   return (
     <article className="device-card">
@@ -91,6 +103,19 @@ function DeviceCard({ device }: { device: AndroidDevice }) {
             <dd>{observedLabel}</dd>
           </div>
         </dl>
+        <div className="device-actions">
+          <button
+            type="button"
+            disabled={!isOnline || wakeState === "running"}
+            onClick={() => void wake()}
+          >
+            {wakeState === "running" ? "Waking…" : "Wake screen"}
+          </button>
+          <span className={`action-status action-${wakeState}`} aria-live="polite">
+            {wakeState === "completed" && "Wake sent"}
+            {wakeState === "error" && DASHBOARD_CONSTANTS.wakeFailureMessage}
+          </span>
+        </div>
       </div>
     </article>
   );
@@ -201,7 +226,7 @@ export default function App() {
 
       <footer>
         <span>POCKETPORTAL / LOCAL LAB</span>
-        <span>Read-only preview</span>
+        <span>Safe device actions</span>
       </footer>
     </main>
   );

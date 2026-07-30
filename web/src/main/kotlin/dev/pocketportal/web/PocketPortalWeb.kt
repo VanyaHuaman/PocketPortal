@@ -6,6 +6,9 @@ import dev.pocketportal.application.device.GetAndroidDevices
 import dev.pocketportal.application.device.GetAndroidDeviceScreenshot
 import dev.pocketportal.application.device.DeviceScreenshotFailure
 import dev.pocketportal.application.device.DeviceScreenshotResult
+import dev.pocketportal.application.device.DeviceWakeFailure
+import dev.pocketportal.application.device.DeviceWakeResult
+import dev.pocketportal.application.device.WakeAndroidDevice
 import dev.pocketportal.domain.device.AndroidDevice
 import dev.pocketportal.domain.device.DeviceSerial
 import io.ktor.http.ContentType
@@ -17,6 +20,7 @@ import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.server.response.respond
 import io.ktor.server.response.respondBytes
 import io.ktor.server.routing.get
+import io.ktor.server.routing.post
 import io.ktor.server.routing.routing
 import io.ktor.server.http.content.staticResources
 import kotlinx.serialization.Serializable
@@ -25,6 +29,7 @@ fun Application.pocketPortalWeb(
     getSystemStatus: GetSystemStatus,
     getAndroidDevices: GetAndroidDevices,
     getAndroidDeviceScreenshot: GetAndroidDeviceScreenshot,
+    wakeAndroidDevice: WakeAndroidDevice,
 ) {
     install(ContentNegotiation) {
         json()
@@ -102,11 +107,42 @@ fun Application.pocketPortalWeb(
             }
         }
 
+        post(WebConstants.DEVICE_WAKE_PATH) {
+            val serial = call.deviceSerialOrBadRequest(WebConstants.DEVICE_WAKE_FAILED_CODE)
+                ?: return@post
+            when (val result = wakeAndroidDevice(serial)) {
+                DeviceWakeResult.Completed -> call.respond(HttpStatusCode.NoContent)
+                is DeviceWakeResult.Failed ->
+                    call.respond(
+                        status = result.reason.toHttpStatus(),
+                        message = ErrorResponse(
+                            code = WebConstants.DEVICE_WAKE_FAILED_CODE,
+                            detail = result.reason.name.lowercase(),
+                        ),
+                    )
+            }
+        }
+
         staticResources(
             remotePath = WebConstants.FRONTEND_ROUTE,
             basePackage = WebConstants.FRONTEND_RESOURCE_PACKAGE,
             index = WebConstants.FRONTEND_INDEX_FILE,
         )
+    }
+}
+
+private suspend fun io.ktor.server.application.ApplicationCall.deviceSerialOrBadRequest(
+    errorCode: String,
+): DeviceSerial? {
+    val serialValue = parameters[WebConstants.DEVICE_SERIAL_PARAMETER]
+    return try {
+        DeviceSerial(requireNotNull(serialValue))
+    } catch (_: IllegalArgumentException) {
+        respond(
+            HttpStatusCode.BadRequest,
+            ErrorResponse(errorCode, DeviceWakeFailure.DEVICE_NOT_FOUND.name.lowercase()),
+        )
+        null
     }
 }
 
@@ -117,6 +153,15 @@ private fun DeviceScreenshotFailure.toHttpStatus(): HttpStatusCode = when (this)
     DeviceScreenshotFailure.TOOL_NOT_FOUND,
     DeviceScreenshotFailure.TIMED_OUT,
     DeviceScreenshotFailure.COMMAND_FAILED,
+    -> HttpStatusCode.ServiceUnavailable
+}
+
+private fun DeviceWakeFailure.toHttpStatus(): HttpStatusCode = when (this) {
+    DeviceWakeFailure.DEVICE_NOT_FOUND -> HttpStatusCode.NotFound
+    DeviceWakeFailure.DEVICE_NOT_ONLINE -> HttpStatusCode.Conflict
+    DeviceWakeFailure.TOOL_NOT_FOUND,
+    DeviceWakeFailure.TIMED_OUT,
+    DeviceWakeFailure.COMMAND_FAILED,
     -> HttpStatusCode.ServiceUnavailable
 }
 

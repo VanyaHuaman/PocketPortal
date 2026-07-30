@@ -13,3 +13,14 @@ export async function fetchDevices(signal?: AbortSignal): Promise<DeviceListResp
 
   return response.json() as Promise<DeviceListResponse>;
 }
+
+export async function wakeDevice(serial: string): Promise<void> {
+  const response = await fetch(API_PATHS.wakeDevice(serial), {
+    method: "POST",
+    headers: { Accept: "application/json" },
+  });
+
+  if (!response.ok) {
+    throw new Error(`Wake action failed with status ${response.status}`);
+  }
+}

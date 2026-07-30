@@ -849,6 +849,7 @@ PocketPortal's first useful release is successful when:
 - [x] Add the first read-only React dashboard with live device cards, automatic refresh, and explicit loading, empty, and error states.
 - [x] Enrich online device cards with Android/SDK version, manufacturer, battery, charging, screen, connection, and observation time while preserving partial results.
 - [x] Add bounded low-frequency screenshots for online device cards through a validated read-only API.
+- [x] Add the first bounded safe action: wake an online Android display with a fixed key event.
 - [x] Replace the validated manual runtime procedure with a resumable installer, prerequisite doctor, versioned upgrades, health verification, automatic failure recovery, and explicit rollback.
 - [ ] Test all Android devices with scrcpy.
 - [ ] Test several simultaneous scrcpy sessions.

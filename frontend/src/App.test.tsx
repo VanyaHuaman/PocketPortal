@@ -64,4 +64,39 @@ describe("PocketPortal dashboard", () => {
     await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
     expect(await screen.findByText("No Android devices are visible yet.")).toBeInTheDocument();
   });
+
+  it("sends a wake action for an online device", async () => {
+    const fetchMock = vi.spyOn(globalThis, "fetch")
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            devices: [{
+              serial: "ABC123",
+              state: "online",
+              model: "Pixel_4_XL",
+              product: "coral",
+              connectionType: "usb",
+              manufacturer: "Google",
+              androidVersion: "13",
+              sdkLevel: 33,
+              batteryPercentage: 75,
+              chargingState: "charging",
+              screenState: "off",
+              observedAtEpochMillis: 1_234,
+            }],
+          }),
+          { status: 200, headers: { "Content-Type": "application/json" } },
+        ),
+      )
+      .mockResolvedValueOnce(new Response(null, { status: 204 }));
+
+    render(<App />);
+    fireEvent.click(await screen.findByRole("button", { name: "Wake screen" }));
+
+    expect(await screen.findByText("Wake sent")).toBeInTheDocument();
+    expect(fetchMock).toHaveBeenLastCalledWith(
+      "/api/devices/ABC123/actions/wake",
+      expect.objectContaining({ method: "POST" }),
+    );
+  });
 });
