@@ -105,8 +105,10 @@ token over SSH, and stores that token in the current user's login Keychain:
 ```
 
 The first run may request SSH and Keychain approval. Subsequent runs reuse the
-certificate and Keychain credential. If more than one device is online, the
-launcher presents a numbered picker. A model-based identifier is also accepted:
+certificate and Keychain credential and remember the server settings. In an
+interactive terminal, the launcher presents a PocketPortal-styled device list
+with arrow-key navigation, device health details, refresh, and quit controls.
+A model-based identifier is also accepted:
 
 ```bash
 ./scripts/connect-macos.sh \
@@ -115,14 +117,7 @@ launcher presents a numbered picker. A model-based identifier is also accepted:
   --device pixel-4-xl
 ```
 
-To shorten the recurring command, set these in the shell profile:
-
-```bash
-export POCKETPORTAL_CONNECT_SERVER='wss://192.168.0.151:8443'
-export POCKETPORTAL_CONNECT_SSH_TARGET='vanya@192.168.0.151'
-```
-
-Then connecting a device requires only:
+After the first run, connecting a device requires only:
 
 ```bash
 ./scripts/connect-macos.sh

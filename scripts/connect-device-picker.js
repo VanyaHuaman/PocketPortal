@@ -3,6 +3,10 @@ function displayName(device) {
   return model.replace(/_/g, " ");
 }
 
+function safe(value) {
+  return String(value == null ? "" : value).replace(/[\t\r\n]/g, " ");
+}
+
 function identifier(value) {
   return value
     .toLowerCase()
@@ -36,7 +40,20 @@ function run(arguments) {
     .map((device) => {
       const label = displayName(device);
       const kind = (device.formFactor || "unknown").replace(/_/g, " ");
-      return `${device.serial}\t${label} · ${kind}`;
+      const battery =
+        device.batteryPercentage == null ? "—" : `${device.batteryPercentage}%`;
+      return [
+        device.serial,
+        label,
+        device.manufacturer || "Android",
+        device.androidVersion || "—",
+        kind,
+        battery,
+        device.chargingState || "unknown",
+        device.screenState || "unknown",
+      ]
+        .map(safe)
+        .join("\t");
     })
     .join("\n");
 }
