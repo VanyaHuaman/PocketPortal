@@ -840,13 +840,13 @@ PocketPortal's first useful release is successful when:
 - [x] Purchase six Anker 310 three-foot USB-A-to-USB-C data cables.
 - [ ] Label the six Anker cables after assigning devices and hub ports.
 - [ ] Complete the 24–48 hour hub acceptance test with all six Android devices.
-- [ ] Install Android platform tools on Ubuntu.
+- [x] Install Android platform tools on Ubuntu.
 - [ ] Authorize all Android devices for USB debugging.
 - [x] Implement the first clean-architecture ADB discovery slice with typed device states, bounded execution, configuration, safe failures, and automated tests.
 - [x] Verify live discovery against an attached device and verify missing-ADB behavior in the Podman clean room.
 - [x] Deploy the first runtime artifact to the Ubuntu host as an enabled user systemd service bound only to localhost.
 - [x] Verify the real Ubuntu service reports the authorized Pixel 4 XL online while refusing LAN connections to the unauthenticated API.
-- [ ] Replace the validated manual runtime procedure with a resumable installer, prerequisite doctor, versioned upgrades, and rollback.
+- [x] Replace the validated manual runtime procedure with a resumable installer, prerequisite doctor, versioned upgrades, health verification, automatic failure recovery, and explicit rollback.
 - [ ] Test all Android devices with scrcpy.
 - [ ] Test several simultaneous scrcpy sessions.
 - [ ] Verify APK metadata inspection with representative debug and release builds.
@@ -870,7 +870,7 @@ PocketPortal's first useful release is successful when:
 - [ ] Add the test harness, representative unit/integration/API tests, and CI quality gates with the first vertical feature.
 - [ ] Record extraction criteria and keep optional worker protocols separate from PocketPortal's internal domain interfaces.
 - [ ] Keep runtime values in typed configuration and module-owned constants; add validation tests with each new setting.
-- [ ] Maintain a one-command development bootstrap and design the Ubuntu installer before the first lab deployment.
+- [x] Maintain a one-command development bootstrap and provide a tested Ubuntu installer before expanding the lab deployment.
 - [x] Add and verify a Podman clean-room test that builds from a fresh Linux image, runs tests, assembles the distribution, starts as a non-root user, loads external configuration, and probes readiness.
 - [ ] Add a disposable Ubuntu VM installation test for systemd, udev, ADB, scrcpy, upgrades, and rollback.
 - [x] Add a strictly validated MkDocs Material documentation site with isolated local setup and a GitHub Pages deployment workflow.

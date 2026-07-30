@@ -35,6 +35,14 @@ The user must have systemd lingering enabled for the service to start without an
 
 ## Operations
 
+Run host diagnostics:
+
+```bash
+~/.local/bin/pocketportal doctor
+```
+
+Warnings do not make the command fail; missing required capabilities return a non-zero exit code.
+
 Inspect the service:
 
 ```bash
@@ -65,4 +73,22 @@ curl --fail http://127.0.0.1:8080/api/devices
 
 ## Installation status
 
-The runtime layout and service template have been validated on a real Ubuntu host. The resumable production installer, prerequisite doctor, versioned upgrade command, and automated rollback are still under development.
+Build a distribution on a development or CI machine, then copy the archive and repository deployment files to the Ubuntu host. Install or upgrade with:
+
+```bash
+./scripts/install-ubuntu.sh install \
+  --archive pocketportal-<version>.tar \
+  --version <version>
+```
+
+Running the same command again is safe. Existing configuration is preserved. A release is activated only from an executable, versioned distribution, then the installer probes both `/api/status` and `/api/devices`. A failed probe restores the prior release.
+
+Roll back to an already installed version with:
+
+```bash
+./scripts/install-ubuntu.sh rollback --version <previous-version>
+```
+
+The installer supports Ubuntu versions listed in `deploy/ubuntu/install.env`. An untested Ubuntu release requires the explicit `--allow-unsupported-os` flag and remains visible as a warning in `pocketportal doctor`.
+
+The installer, doctor, upgrade, automatic failure recovery, and explicit rollback were validated against the live Ubuntu host with an authorized Pixel 4 XL on July 29, 2026.

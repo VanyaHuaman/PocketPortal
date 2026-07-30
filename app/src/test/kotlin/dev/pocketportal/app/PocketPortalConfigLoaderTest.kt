@@ -33,6 +33,35 @@ class PocketPortalConfigLoaderTest {
         assertEquals(FILE_ADB_TIMEOUT_MILLIS, config.adb.timeout.toMillis())
     }
 
+    @Test
+    fun `uses the conventional user config when no explicit path is set`() {
+        val configHome = Files.createTempDirectory("pocketportal-config-home")
+        val configFile = configHome.resolve(AppConstants.XDG_CONFIG_RELATIVE_PATH)
+        Files.createDirectories(configFile.parent)
+        configFile.writeText(
+            """
+            ${AppConstants.HOST_PROPERTY}=$FILE_HOST
+            ${AppConstants.PORT_PROPERTY}=$FILE_PORT
+            ${AppConstants.ADB_PATH_PROPERTY}=$FILE_ADB_PATH
+            ${AppConstants.ADB_TIMEOUT_PROPERTY}=$FILE_ADB_TIMEOUT_MILLIS
+            """.trimIndent(),
+        )
+
+        val config = PocketPortalConfigLoader.load(
+            environment = EnvironmentReader { name ->
+                if (name == AppConstants.XDG_CONFIG_HOME_ENVIRONMENT_VARIABLE) {
+                    configHome.toString()
+                } else {
+                    null
+                }
+            },
+        )
+
+        assertEquals(FILE_HOST, config.host)
+        assertEquals(FILE_PORT, config.port)
+        assertEquals(FILE_ADB_PATH, config.adb.executablePath)
+    }
+
     private companion object {
         const val FILE_HOST = "file-host"
         const val FILE_PORT = 7000

@@ -9,7 +9,7 @@ plugins {
 
 allprojects {
     group = "dev.pocketportal"
-    version = "0.1.0-SNAPSHOT"
+    version = providers.gradleProperty("pocketPortalVersion").get()
 }
 
 subprojects {

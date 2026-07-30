@@ -3,6 +3,10 @@ package dev.pocketportal.app
 object AppConstants {
     const val DEFAULT_CONFIG_RESOURCE = "pocketportal.properties"
     const val CONFIG_PATH_ENVIRONMENT_VARIABLE = "POCKETPORTAL_CONFIG"
+    const val XDG_CONFIG_HOME_ENVIRONMENT_VARIABLE = "XDG_CONFIG_HOME"
+    const val HOME_ENVIRONMENT_VARIABLE = "HOME"
+    const val USER_CONFIG_RELATIVE_PATH = ".config/pocketportal/pocketportal.properties"
+    const val XDG_CONFIG_RELATIVE_PATH = "pocketportal/pocketportal.properties"
     const val HOST_ENVIRONMENT_VARIABLE = "POCKETPORTAL_HOST"
     const val PORT_ENVIRONMENT_VARIABLE = "POCKETPORTAL_PORT"
     const val HOST_PROPERTY = "server.host"

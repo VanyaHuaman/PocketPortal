@@ -25,10 +25,12 @@ object PocketPortalConfigLoader {
         environment: EnvironmentReader = EnvironmentReader(System::getenv),
     ): PocketPortalConfig {
         val configPath = environment.read(AppConstants.CONFIG_PATH_ENVIRONMENT_VARIABLE)
-        val properties = if (configPath == null) {
-            loadPackagedProperties()
-        } else {
-            loadProperties(Path.of(configPath))
+        val properties = when {
+            configPath != null -> loadProperties(Path.of(configPath))
+            else -> defaultUserConfigPath(environment)
+                ?.takeIf(Files::isRegularFile)
+                ?.let(::loadProperties)
+                ?: loadPackagedProperties()
         }
         val host = environment.read(AppConstants.HOST_ENVIRONMENT_VARIABLE)
             ?: properties.required(AppConstants.HOST_PROPERTY)
@@ -48,6 +50,18 @@ object PocketPortalConfigLoader {
                 timeout = adbTimeoutText.toPositiveDurationMillis(AppConstants.ADB_TIMEOUT_PROPERTY),
             ),
         )
+    }
+
+    private fun defaultUserConfigPath(environment: EnvironmentReader): Path? {
+        val xdgConfigHome = environment.read(AppConstants.XDG_CONFIG_HOME_ENVIRONMENT_VARIABLE)
+        if (!xdgConfigHome.isNullOrBlank()) {
+            return Path.of(xdgConfigHome).resolve(AppConstants.XDG_CONFIG_RELATIVE_PATH)
+        }
+
+        return environment.read(AppConstants.HOME_ENVIRONMENT_VARIABLE)
+            ?.takeIf(String::isNotBlank)
+            ?.let(Path::of)
+            ?.resolve(AppConstants.USER_CONFIG_RELATIVE_PATH)
     }
 
     private fun loadProperties(path: Path): Properties {

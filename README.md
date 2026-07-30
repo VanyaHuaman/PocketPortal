@@ -34,6 +34,16 @@ POCKETPORTAL_PORT=9090 ./gradlew :app:run
 
 Runtime defaults live in [`config/pocketportal.properties`](./config/pocketportal.properties) and are packaged with the application. Override the config path with `POCKETPORTAL_CONFIG`. Individual overrides currently include `POCKETPORTAL_HOST`, `POCKETPORTAL_PORT`, `POCKETPORTAL_ADB_PATH`, and `POCKETPORTAL_ADB_TIMEOUT_MILLIS`.
 
+On an Ubuntu host, build the distribution elsewhere and install it with:
+
+```bash
+./scripts/install-ubuntu.sh install \
+  --archive pocketportal-<version>.tar \
+  --version <version>
+```
+
+The installer preserves configuration, activates an immutable versioned release, verifies both API endpoints, and automatically restores the previous release if health checks fail. Run `~/.local/bin/pocketportal doctor` for host diagnostics. See the [Ubuntu runtime guide](./docs/operations/ubuntu-runtime.md) for upgrades and rollback.
+
 ## Verify changes
 
 ```bash
@@ -79,6 +89,7 @@ The script creates an isolated `.venv-docs` environment and installs the pinned 
 - `testing/clean-room`: Podman-based fresh-Linux installation smoke test
 - `docs`: public MkDocs Material documentation
 - `deploy/ubuntu`: localhost-only configuration and user-systemd service templates
+- `scripts/install-ubuntu.sh`: resumable Ubuntu install, upgrade, health check, and rollback
 
 PocketPortal is a modular monolith. Capabilities move into separate projects only when a concrete host, trust, runtime, lifecycle, scaling, or reuse boundary requires it.
 

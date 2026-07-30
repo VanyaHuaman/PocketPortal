@@ -30,10 +30,16 @@ The platform must remain application-project agnostic. PocketPortal does not mod
 - The first real Ubuntu runtime deployment is installed as an enabled user systemd service under `~/.local/share/pocketportal`.
 - The service uses an external config in `~/.config/pocketportal`, binds only to localhost, and is intentionally unreachable through the server's LAN address.
 - The authorized Pixel 4 XL is reported online by the live `/api/devices` endpoint.
+- `pocketportal doctor` now checks Ubuntu support, Java, ADB, connected devices, user systemd, lingering, service state, and current-boot kernel segfaults through tested clean-architecture boundaries.
+- `scripts/install-ubuntu.sh` provides resumable installation and upgrade, immutable version activation, API health checks, automatic restoration after failed health checks, and explicit rollback.
+- Version `0.1.1-SNAPSHOT` is active on the real server. Upgrade from and rollback to `0.1.0-SNAPSHOT` were both verified, followed by restoration of `0.1.1-SNAPSHOT`.
+- The installed `~/.local/bin/pocketportal doctor` finds the conventional user config automatically. On the server it reports one authorized Pixel 4 XL, active service, enabled lingering, and zero current-boot segfaults.
+- Ubuntu 25.10 is outside the tested `24.04`/`26.04` support matrix and is end-of-life, so installation requires `--allow-unsupported-os` and doctor emits a warning.
 - The server needs only a Java runtime for artifact deployment. Its source checkout cannot build without a JDK, which confirms that build and runtime prerequisites must remain distinct in the installer and doctor.
 - An initial JVM crash occurred on Ubuntu kernel `6.17.0-40` alongside hundreds of unrelated process segfaults. After rebooting into `6.17.0-41`, the complete workload and running service produced zero segfaults. Continue monitoring before declaring the host fully stable.
 - `./testing/clean-room/run.sh` builds and tests in a fresh Linux JDK image, assembles the distribution, starts it as a non-root user in a clean JRE image with external configuration, probes readiness, and removes the temporary container.
 - The Podman clean-room test passed end to end on July 29, 2026, including graceful missing-ADB behavior.
+- A later clean-room rerun was blocked because the existing Podman machine immediately returned to `stopped` after startup; the application build and complete test suite still pass, and the real-host installer path passed.
 - A public-facing MkDocs Material site now lives in `docs`, builds strictly with `./scripts/docs.sh build`, and has a GitHub Pages workflow.
 - The docs dependency is pinned to MkDocs Material 9.7.7 and remains isolated from the PocketPortal application.
 - The docs build passes locally and in GitHub Actions.

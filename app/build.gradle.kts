@@ -16,6 +16,7 @@ sourceSets {
 
 dependencies {
     implementation(project(":application"))
+    implementation(project(":domain"))
     implementation(project(":infrastructure"))
     implementation(project(":web"))
     implementation(libs.ktor.server.cio)
