@@ -35,6 +35,7 @@ nav:
   - Architecture: architecture.md
   - Operations:
       - Linux runtime: operations/linux-runtime.md
+      - Remote Android Studio: operations/android-studio-remote.md
       - Clean-room testing: operations/clean-room.md
 
 markdown_extensions:

@@ -91,6 +91,21 @@ The dependable approach is to run Android Studio in a graphical session associat
 
 Running Android Studio independently on every client and attempting to reach the server's ADB instance is possible to experiment with, but it should not be the foundation of PocketPortal. Remote ADB can introduce security, discovery, reconnection, and tooling-compatibility problems.
 
+The first Mac-to-server experiment proved that a localhost-only SSH tunnel can
+carry the ADB protocol and expose the server-connected Pixel to the Mac CLI.
+Android Studio's ADB `36.0.2` terminated the Ubuntu-packaged ADB `34.0.5`
+daemon. The server was upgraded to an isolated Platform Tools `36.0.2` copy and
+the IDE experiment was repeated; Android Studio still terminated the remote
+daemon. Direct `ADB_SERVER_SOCKET` access is therefore not a supported
+PocketPortal client workflow.
+
+A later PocketPortal client helper must keep Android Studio on its normal local
+ADB server and use only a separately proven, isolated device transport, or
+guide users into an Android Studio session hosted on Linux through remote
+desktop. It should validate versions, monitor connectivity, explain failures,
+and restore normal behavior when the session closes. Do not turn remote ADB
+into a publicly listening service to make setup easier.
+
 ### Wireless debugging
 
 Wireless debugging can be retained as a fallback for temporarily undocked devices. It should be limited to the trusted home network and not exposed directly to the internet. DHCP reservations may improve reliability, but USB should remain the default connection.
@@ -852,6 +867,7 @@ PocketPortal's first useful release is successful when:
 - [x] Add the first bounded safe action: wake an online Android display with a fixed key event.
 - [x] Replace the validated manual runtime procedure with a resumable installer, prerequisite doctor, versioned upgrades, health verification, automatic failure recovery, and explicit rollback.
 - [ ] Test all Android devices with scrcpy.
+- [ ] Turn the validated remote-ADB experiment into an optional, version-aware client setup helper after the Android Studio workflow is proven end to end.
 - [ ] Test several simultaneous scrcpy sessions.
 - [ ] Verify APK metadata inspection with representative debug and release builds.
 - [ ] Verify single-device APK installation, replacement with preserved data, optional launch, failure reporting, and temporary-file cleanup.
