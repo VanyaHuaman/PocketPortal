@@ -1,0 +1,34 @@
+ARG BUILD_IMAGE=eclipse-temurin:17-jdk-jammy
+ARG RUNTIME_IMAGE=eclipse-temurin:17-jre-jammy
+
+FROM ${BUILD_IMAGE} AS builder
+
+WORKDIR /workspace
+COPY . .
+
+RUN ./scripts/bootstrap.sh \
+    && ./gradlew :app:installDist --no-daemon
+
+FROM ${RUNTIME_IMAGE} AS runtime
+
+ARG SERVICE_USER=pocketportal
+ARG INSTALL_DIRECTORY=/opt/pocketportal
+ARG CONFIG_DIRECTORY=/etc/pocketportal
+
+RUN groupadd --system "${SERVICE_USER}" \
+    && useradd --system --gid "${SERVICE_USER}" --home-dir "${INSTALL_DIRECTORY}" "${SERVICE_USER}" \
+    && mkdir --parents "${INSTALL_DIRECTORY}" "${CONFIG_DIRECTORY}" \
+    && chown --recursive "${SERVICE_USER}:${SERVICE_USER}" "${INSTALL_DIRECTORY}" "${CONFIG_DIRECTORY}"
+
+COPY --from=builder --chown=${SERVICE_USER}:${SERVICE_USER} \
+    /workspace/app/build/install/app/ ${INSTALL_DIRECTORY}/
+COPY --chown=${SERVICE_USER}:${SERVICE_USER} \
+    testing/clean-room/pocketportal.properties ${CONFIG_DIRECTORY}/pocketportal.properties
+
+ENV POCKETPORTAL_CONFIG=/etc/pocketportal/pocketportal.properties
+
+USER ${SERVICE_USER}
+WORKDIR ${INSTALL_DIRECTORY}
+
+EXPOSE 8080
+ENTRYPOINT ["/opt/pocketportal/bin/app"]
