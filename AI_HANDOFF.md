@@ -30,7 +30,10 @@ The platform must remain application-project agnostic. PocketPortal does not mod
 - The Podman clean-room test passed end to end on July 29, 2026, including graceful missing-ADB behavior.
 - A public-facing MkDocs Material site now lives in `docs`, builds strictly with `./scripts/docs.sh build`, and has a GitHub Pages workflow.
 - The docs dependency is pinned to MkDocs Material 9.7.7 and remains isolated from the PocketPortal application.
-- The docs build passes locally. Remote creation and deployment are pending because the configured `gh` token for `VanyaHuaman` is expired.
+- The docs build passes locally and in GitHub Actions.
+- The public repository is `https://github.com/VanyaHuaman/PocketPortal`.
+- GitHub Pages uses the Actions workflow and is live at `https://vanyahuaman.github.io/PocketPortal/`.
+- The initial Pages build and deployment completed successfully on July 29, 2026, and both public URLs were verified over HTTPS.
 - The React frontend has deliberately not been added yet; add it with the first real dashboard slice.
 - The selected USB hub has been purchased.
 - Six Anker USB-A-to-USB-C data cables have been purchased as three two-packs.

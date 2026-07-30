@@ -871,7 +871,7 @@ PocketPortal's first useful release is successful when:
 - [x] Add and verify a Podman clean-room test that builds from a fresh Linux image, runs tests, assembles the distribution, starts as a non-root user, loads external configuration, and probes readiness.
 - [ ] Add a disposable Ubuntu VM installation test for systemd, udev, ADB, scrcpy, upgrades, and rollback.
 - [x] Add a strictly validated MkDocs Material documentation site with isolated local setup and a GitHub Pages deployment workflow.
-- [ ] Create the GitHub remote, enable GitHub Actions as the Pages source, and verify the deployed documentation URL.
+- [x] Create the public GitHub remote, enable GitHub Actions as the Pages source, and verify the deployed documentation URL.
 
 ## 16. Decisions to make after the proof of concept
 
