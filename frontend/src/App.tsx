@@ -55,7 +55,7 @@ function DeviceCard({ device }: { device: AndroidDevice }) {
 
   return (
     <article className="device-card">
-      <div className="device-visual">
+      <div className={`device-visual device-visual-${device.formFactor}`}>
         <span className="speaker" />
         <span className="android-mark" aria-hidden="true">A</span>
         {isOnline && (
@@ -97,6 +97,10 @@ function DeviceCard({ device }: { device: AndroidDevice }) {
           <div>
             <dt>Screen</dt>
             <dd>{device.screenState}</dd>
+          </div>
+          <div>
+            <dt>Form</dt>
+            <dd>{device.formFactor.replaceAll("_", " ")}</dd>
           </div>
           <div>
             <dt>Observed</dt>

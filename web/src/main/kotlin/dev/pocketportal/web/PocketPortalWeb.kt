@@ -270,6 +270,7 @@ data class AndroidDeviceResponse(
     val batteryPercentage: Int?,
     val chargingState: String,
     val screenState: String,
+    val formFactor: String,
     val observedAtEpochMillis: Long,
 )
 
@@ -291,5 +292,6 @@ private fun AndroidDevice.toResponse(): AndroidDeviceResponse = AndroidDeviceRes
     batteryPercentage = details?.batteryPercentage,
     chargingState = details?.chargingState?.name?.lowercase() ?: WebConstants.UNKNOWN_VALUE,
     screenState = details?.screenState?.name?.lowercase() ?: WebConstants.UNKNOWN_VALUE,
+    formFactor = details?.formFactor?.name?.lowercase() ?: WebConstants.UNKNOWN_VALUE,
     observedAtEpochMillis = observedAtEpochMillis,
 )

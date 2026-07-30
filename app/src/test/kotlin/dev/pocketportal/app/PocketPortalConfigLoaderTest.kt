@@ -5,6 +5,8 @@ import kotlin.io.path.writeText
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import dev.pocketportal.domain.device.AndroidDeviceFormFactor
+import dev.pocketportal.domain.device.DeviceSerial
 
 class PocketPortalConfigLoaderTest {
     @Test
@@ -150,6 +152,39 @@ class PocketPortalConfigLoaderTest {
         assertEquals(keyStore, config.tls.keyStorePath)
     }
 
+    @Test
+    fun `loads typed per-device form factor overrides`() {
+        val configFile = Files.createTempFile("pocketportal-form-factor-config", ".properties")
+        configFile.writeText(
+            """
+            ${AppConstants.HOST_PROPERTY}=$FILE_HOST
+            ${AppConstants.PORT_PROPERTY}=$FILE_PORT
+            ${AppConstants.ADB_PATH_PROPERTY}=$FILE_ADB_PATH
+            ${AppConstants.ADB_TIMEOUT_PROPERTY}=$FILE_ADB_TIMEOUT_MILLIS
+            ${AppConstants.FORM_FACTOR_OVERRIDES_PROPERTY}=$FORM_FACTOR_OVERRIDES
+            """.trimIndent(),
+        )
+
+        val config = PocketPortalConfigLoader.load(
+            environment = EnvironmentReader { name ->
+                if (name == AppConstants.CONFIG_PATH_ENVIRONMENT_VARIABLE) {
+                    configFile.toString()
+                } else {
+                    null
+                }
+            },
+        )
+
+        assertEquals(
+            AndroidDeviceFormFactor.FOLDABLE_CLAMSHELL,
+            config.adb.formFactorOverrides[DeviceSerial(FOLDABLE_SERIAL)],
+        )
+        assertEquals(
+            AndroidDeviceFormFactor.FOLDABLE_BOOK,
+            config.adb.formFactorOverrides[DeviceSerial(BOOK_SERIAL)],
+        )
+    }
+
     private companion object {
         const val FILE_HOST = "file-host"
         const val FILE_PORT = 7000
@@ -162,5 +197,9 @@ class PocketPortalConfigLoaderTest {
         const val TLS_HOST = "192.168.0.151"
         const val TLS_PORT = 8443
         const val TLS_PASSWORD = "test-tls-password"
+        const val FOLDABLE_SERIAL = "FLIP123"
+        const val BOOK_SERIAL = "FOLD456"
+        const val FORM_FACTOR_OVERRIDES =
+            "$FOLDABLE_SERIAL=foldable_clamshell,$BOOK_SERIAL=foldable_book"
     }
 }

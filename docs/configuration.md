@@ -13,6 +13,7 @@ android.adb.path=adb
 android.adb.timeoutMillis=5000
 android.screenshot.maximumBytes=8388608
 android.bridge.enabled=false
+android.formFactorOverrides=
 ```
 
 Use `POCKETPORTAL_CONFIG` to select an external properties file. Individual settings currently support these overrides:
@@ -33,6 +34,7 @@ Use `POCKETPORTAL_CONFIG` to select an external properties file. Individual sett
 | `POCKETPORTAL_SCREENSHOT_MAXIMUM_BYTES` | Maximum accepted screenshot size in bytes |
 | `POCKETPORTAL_ADB_BRIDGE_ENABLED` | Enables the narrowly scoped ADB bridge |
 | `POCKETPORTAL_ADB_BRIDGE_TOKEN` | Bridge bearer token; required when enabled |
+| `POCKETPORTAL_FORM_FACTOR_OVERRIDES` | Comma-separated `SERIAL=FORM_FACTOR` overrides |
 
 PocketPortal validates required values during startup and fails with a targeted
 configuration error when a value is missing or invalid. Bridge tokens must
@@ -44,6 +46,18 @@ owner-only permissions.
 TLS can listen on a private LAN address while the existing HTTP connector
 remains on `127.0.0.1`. This preserves local health checks without exposing
 plaintext HTTP to the LAN.
+
+PocketPortal automatically classifies phones and tablets from physical display
+size and density using Android's 600dp tablet breakpoint. Foldable styles
+require an explicit override because Android manufacturers do not expose a
+portable clamshell-versus-book hardware field:
+
+```properties
+android.formFactorOverrides=FLIP_SERIAL=foldable_clamshell,FOLD_SERIAL=foldable_book
+```
+
+Valid values are `phone`, `tablet`, `foldable_clamshell`, `foldable_book`, and
+`unknown`.
 
 !!! warning
     Do not place credentials, signing material, device PINs, application

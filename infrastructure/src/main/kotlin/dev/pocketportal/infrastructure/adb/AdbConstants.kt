@@ -22,12 +22,18 @@ internal object AdbConstants {
     const val SDK_LEVEL_MARKER = "__POCKETPORTAL_SDK_LEVEL__"
     const val BATTERY_MARKER = "__POCKETPORTAL_BATTERY__"
     const val POWER_MARKER = "__POCKETPORTAL_POWER__"
+    const val CHARACTERISTICS_MARKER = "__POCKETPORTAL_CHARACTERISTICS__"
+    const val DISPLAY_SIZE_MARKER = "__POCKETPORTAL_DISPLAY_SIZE__"
+    const val DISPLAY_DENSITY_MARKER = "__POCKETPORTAL_DISPLAY_DENSITY__"
     const val DETAILS_SHELL_SCRIPT =
         "printf '$MANUFACTURER_MARKER\\n'; getprop ro.product.manufacturer; " +
             "printf '$ANDROID_VERSION_MARKER\\n'; getprop ro.build.version.release; " +
             "printf '$SDK_LEVEL_MARKER\\n'; getprop ro.build.version.sdk; " +
             "printf '$BATTERY_MARKER\\n'; dumpsys battery; " +
-            "printf '$POWER_MARKER\\n'; dumpsys power | grep 'mWakefulness='"
+            "printf '$POWER_MARKER\\n'; dumpsys power | grep 'mWakefulness='; " +
+            "printf '$CHARACTERISTICS_MARKER\\n'; getprop ro.build.characteristics; " +
+            "printf '$DISPLAY_SIZE_MARKER\\n'; wm size; " +
+            "printf '$DISPLAY_DENSITY_MARKER\\n'; wm density"
 
     const val BATTERY_LEVEL_KEY = "level"
     const val BATTERY_SCALE_KEY = "scale"
@@ -59,4 +65,9 @@ internal object AdbConstants {
     const val USB_COMMAND = "usb"
     const val NETWORK_ADB_PORT = 5555
     const val ROUTE_SOURCE_MARKER = "src"
+    const val CHARACTERISTIC_SEPARATOR = ','
+    const val PHYSICAL_SIZE_PREFIX = "Physical size:"
+    const val OVERRIDE_SIZE_PREFIX = "Override size:"
+    const val PHYSICAL_DENSITY_PREFIX = "Physical density:"
+    const val OVERRIDE_DENSITY_PREFIX = "Override density:"
 }

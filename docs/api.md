@@ -41,6 +41,7 @@ Example response:
       "batteryPercentage": 82,
       "chargingState": "charging",
       "screenState": "on",
+      "formFactor": "phone",
       "observedAtEpochMillis": 123456789
     }
   ]
@@ -50,6 +51,11 @@ Example response:
 Possible states currently include `online`, `offline`, `unauthorized`, `recovery`, `bootloader`, `sideload`, and `unknown`.
 
 PocketPortal enriches online devices with one bounded, read-only ADB observation. Individual values remain nullable when a device or Android release does not expose them. If the detail command fails or times out, the device remains in the response with its discovery state and observation time instead of failing the entire fleet.
+
+Online observations include a typed `formFactor`: `phone`, `tablet`,
+`foldable_clamshell`, `foldable_book`, or `unknown`. Phone/tablet detection uses
+physical display metrics; configured per-serial overrides identify foldable
+styles.
 
 If ADB is missing, times out, or exits unsuccessfully, PocketPortal responds with HTTP `503` and a safe typed error. Raw process output is not returned.
 

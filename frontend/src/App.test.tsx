@@ -24,6 +24,7 @@ describe("PocketPortal dashboard", () => {
               batteryPercentage: 75,
               chargingState: "charging",
               screenState: "on",
+              formFactor: "phone",
               observedAtEpochMillis: 1_234,
             },
           ],
@@ -40,10 +41,14 @@ describe("PocketPortal dashboard", () => {
     expect(screen.getByText("01")).toBeInTheDocument();
     expect(screen.getByText("Android 13 · SDK 33")).toBeInTheDocument();
     expect(screen.getByText("75% · charging")).toBeInTheDocument();
+    expect(screen.getByText("phone")).toBeInTheDocument();
     expect(screen.getByAltText("Current screen of Pixel 4 XL")).toHaveAttribute(
       "src",
       expect.stringMatching(/^\/api\/devices\/ABC123\/screenshot\?revision=\d+$/),
     );
+    expect(
+      screen.getByAltText("Current screen of Pixel 4 XL").closest(".device-visual"),
+    ).toHaveClass("device-visual-phone");
   });
 
   it("shows a recoverable error state", async () => {
@@ -82,6 +87,7 @@ describe("PocketPortal dashboard", () => {
               batteryPercentage: 75,
               chargingState: "charging",
               screenState: "off",
+              formFactor: "tablet",
               observedAtEpochMillis: 1_234,
             }],
           }),

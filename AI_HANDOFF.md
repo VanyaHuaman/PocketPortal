@@ -39,7 +39,7 @@ focused on devices, browser control, and application installation.
 - The authorized Pixel 4 XL is reported online by the live `/api/devices` endpoint.
 - `pocketportal doctor` now checks Linux distribution confidence, Java, ADB, connected devices, user systemd, lingering, service state, and current-boot kernel segfaults through tested clean-architecture boundaries.
 - `scripts/install-linux.sh` provides distribution-neutral resumable installation and upgrade, immutable version activation, API health checks, automatic restoration after failed health checks, and explicit rollback. The old `install-ubuntu.sh` entrypoint is a compatibility wrapper.
-- Version `0.1.7-SNAPSHOT` is active on the real server. Earlier upgrade and rollback behavior was verified between `0.1.0` and `0.1.1`; subsequent dashboard, generalized-Linux, enriched-observation, screenshot, wake-action, and limited ADB bridge releases were deployed through the same versioned upgrade path.
+- Version `0.1.8-SNAPSHOT` is active on the real server. Earlier upgrade and rollback behavior was verified between `0.1.0` and `0.1.1`; subsequent dashboard, generalized-Linux, enriched-observation, screenshot, wake-action, limited ADB bridge, and adaptive device-frame releases were deployed through the same versioned upgrade path.
 - The installed `~/.local/bin/pocketportal doctor` finds the conventional user config automatically. On the server it reports one authorized Pixel 4 XL, active service, enabled lingering, and zero current-boot segfaults.
 - Ubuntu 25.10 is the first real-host validation but is end-of-life, so doctor and the generalized installer emit an upgrade warning.
 - Minimal Debian 13 and Fedora 42 container checks validate non-Ubuntu distribution detection, prerequisite guidance, initial installation, idempotent reinstall, versioned upgrade, health-gated activation, and rollback. Service and health commands are deterministic fakes, so these checks do not claim real systemd, udev, USB, or physical-device validation.
@@ -116,6 +116,15 @@ focused on devices, browser control, and application installation.
   server, and left PocketPortal active.
 - The live server currently reports two USB Android devices: Pixel 4 XL serial
   `9B011FFBA00A1L` and Lenovo TB336FU serial `HNY09D8P`.
+- Android observations now classify phone and tablet form factors from physical
+  display metrics. Explicit serial-to-form-factor configuration supports
+  clamshell and book-style foldables, whose folded state cannot be identified
+  reliably from basic ADB properties. The API exposes the typed form factor and
+  the dashboard renders distinct phone, tablet, clamshell, book-foldable, and
+  unknown frames around live screenshots.
+- The live `0.1.8-SNAPSHOT` API classifies the attached Pixel 4 XL as `phone`
+  and the Lenovo TB336FU as `tablet`; the installer health gate and post-deploy
+  inventory check passed on July 30, 2026.
 - Off-LAN connectivity and coexistence with other VPNs are explicitly the final roadmap decision. Do not integrate Tailscale, WireGuard, Cloudflare Access, a relay, or public SSH yet. Finish the trusted home-network device lab and client workflow first, and never expose ADB or PocketPortal through router port forwarding as a shortcut.
 - Frontend dependencies are pinned in `frontend/package-lock.json`; Gradle builds and tests the frontend as part of the normal verification path. The clean-room image uses a dedicated Node build stage and copies only the compiled assets into the JVM build.
 - The selected USB hub has been purchased.

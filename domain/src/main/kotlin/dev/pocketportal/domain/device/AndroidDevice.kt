@@ -17,6 +17,7 @@ data class AndroidDeviceDetails(
     val batteryPercentage: Int?,
     val chargingState: AndroidChargingState,
     val screenState: AndroidScreenState,
+    val formFactor: AndroidDeviceFormFactor,
 ) {
     init {
         require(batteryPercentage == null || batteryPercentage in MINIMUM_BATTERY..MAXIMUM_BATTERY) {
@@ -68,4 +69,49 @@ enum class AndroidScreenState {
     ON,
     OFF,
     UNKNOWN,
+}
+
+enum class AndroidDeviceFormFactor {
+    PHONE,
+    TABLET,
+    FOLDABLE_CLAMSHELL,
+    FOLDABLE_BOOK,
+    UNKNOWN,
+}
+
+object AndroidDeviceFormFactorClassifier {
+    fun classify(
+        characteristics: Set<String>,
+        displayWidthPixels: Int?,
+        displayHeightPixels: Int?,
+        displayDensityDpi: Int?,
+    ): AndroidDeviceFormFactor {
+        if (FOLDABLE_CHARACTERISTIC in characteristics) {
+            return AndroidDeviceFormFactor.UNKNOWN
+        }
+        if (
+            displayWidthPixels == null ||
+            displayHeightPixels == null ||
+            displayDensityDpi == null ||
+            displayWidthPixels <= 0 ||
+            displayHeightPixels <= 0 ||
+            displayDensityDpi <= 0
+        ) {
+            return AndroidDeviceFormFactor.UNKNOWN
+        }
+
+        val smallestWidthDp =
+            minOf(displayWidthPixels, displayHeightPixels).toLong() *
+                ANDROID_BASELINE_DENSITY_DPI /
+                displayDensityDpi
+        return if (smallestWidthDp >= TABLET_SMALLEST_WIDTH_DP) {
+            AndroidDeviceFormFactor.TABLET
+        } else {
+            AndroidDeviceFormFactor.PHONE
+        }
+    }
+
+    private const val FOLDABLE_CHARACTERISTIC = "foldable"
+    private const val ANDROID_BASELINE_DENSITY_DPI = 160L
+    private const val TABLET_SMALLEST_WIDTH_DP = 600L
 }

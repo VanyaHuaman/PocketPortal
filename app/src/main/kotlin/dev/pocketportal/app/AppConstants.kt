@@ -41,4 +41,9 @@ object AppConstants {
         "POCKETPORTAL_TLS_PRIVATE_KEY_PASSWORD"
     const val DEFAULT_TLS_PORT = 8443
     const val DEFAULT_TLS_KEY_ALIAS = "pocketportal"
+    const val FORM_FACTOR_OVERRIDES_PROPERTY = "android.formFactorOverrides"
+    const val FORM_FACTOR_OVERRIDES_ENVIRONMENT_VARIABLE =
+        "POCKETPORTAL_FORM_FACTOR_OVERRIDES"
+    const val FORM_FACTOR_OVERRIDE_ENTRY_SEPARATOR = ','
+    const val FORM_FACTOR_OVERRIDE_VALUE_SEPARATOR = '='
 }

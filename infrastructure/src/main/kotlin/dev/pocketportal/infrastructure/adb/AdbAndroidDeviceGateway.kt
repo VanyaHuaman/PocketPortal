@@ -6,6 +6,8 @@ import dev.pocketportal.application.device.DeviceDiscoveryResult
 import dev.pocketportal.application.status.Clock
 import dev.pocketportal.domain.device.AndroidDevice
 import dev.pocketportal.domain.device.AndroidDeviceState
+import dev.pocketportal.domain.device.AndroidDeviceFormFactor
+import dev.pocketportal.domain.device.DeviceSerial
 import dev.pocketportal.infrastructure.time.SystemClock
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -19,12 +21,18 @@ class AdbAndroidDeviceGateway internal constructor(
     private val timeout: Duration,
     private val commandRunner: CommandRunner = ProcessCommandRunner(),
     private val clock: Clock = SystemClock(),
+    private val formFactorOverrides: Map<DeviceSerial, AndroidDeviceFormFactor> = emptyMap(),
 ) : AndroidDeviceGateway {
-    constructor(adbPath: String, timeout: Duration) : this(
+    constructor(
+        adbPath: String,
+        timeout: Duration,
+        formFactorOverrides: Map<DeviceSerial, AndroidDeviceFormFactor> = emptyMap(),
+    ) : this(
         adbPath = adbPath,
         timeout = timeout,
         commandRunner = ProcessCommandRunner(),
         clock = SystemClock(),
+        formFactorOverrides = formFactorOverrides,
     )
 
     override suspend fun discover(): DeviceDiscoveryResult = withContext(Dispatchers.IO) {
@@ -90,8 +98,11 @@ class AdbAndroidDeviceGateway internal constructor(
             return device
         }
 
+        val details = AdbDeviceDetailsParser.parse(completed.result.standardOutput)
         return device.copy(
-            details = AdbDeviceDetailsParser.parse(completed.result.standardOutput),
+            details = details.copy(
+                formFactor = formFactorOverrides[device.serial] ?: details.formFactor,
+            ),
         )
     }
 

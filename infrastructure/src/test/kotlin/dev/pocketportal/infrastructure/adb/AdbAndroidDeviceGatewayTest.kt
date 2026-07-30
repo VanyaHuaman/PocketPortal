@@ -5,6 +5,8 @@ import dev.pocketportal.application.device.DeviceDiscoveryResult
 import dev.pocketportal.application.status.Clock
 import dev.pocketportal.domain.device.AndroidChargingState
 import dev.pocketportal.domain.device.AndroidScreenState
+import dev.pocketportal.domain.device.AndroidDeviceFormFactor
+import dev.pocketportal.domain.device.DeviceSerial
 import kotlinx.coroutines.test.runTest
 import java.time.Duration
 import kotlin.test.Test
@@ -74,6 +76,7 @@ class AdbAndroidDeviceGatewayTest {
         assertEquals(EXPECTED_BATTERY, device.details?.batteryPercentage)
         assertEquals(AndroidChargingState.CHARGING, device.details?.chargingState)
         assertEquals(AndroidScreenState.OFF, device.details?.screenState)
+        assertEquals(AndroidDeviceFormFactor.PHONE, device.details?.formFactor)
     }
 
     @Test
@@ -96,6 +99,34 @@ class AdbAndroidDeviceGatewayTest {
         assertEquals(1, result.devices.size)
         assertEquals(null, result.devices.single().details)
         assertEquals(OBSERVED_AT, result.devices.single().observedAtEpochMillis)
+    }
+
+    @Test
+    fun `applies a configured foldable style override by serial`() = runTest {
+        val gateway = AdbAndroidDeviceGateway(
+            adbPath = ADB_PATH,
+            timeout = COMMAND_TIMEOUT,
+            commandRunner = CommandRunner { command, _ ->
+                completed(
+                    if (AdbConstants.DEVICES_COMMAND in command) {
+                        DEVICE_LISTING
+                    } else {
+                        DEVICE_DETAILS
+                    },
+                )
+            },
+            clock = Clock { OBSERVED_AT },
+            formFactorOverrides = mapOf(
+                DeviceSerial(DEVICE_SERIAL) to AndroidDeviceFormFactor.FOLDABLE_BOOK,
+            ),
+        )
+
+        val result = assertIs<DeviceDiscoveryResult.Available>(gateway.discover())
+
+        assertEquals(
+            AndroidDeviceFormFactor.FOLDABLE_BOOK,
+            result.devices.single().details?.formFactor,
+        )
     }
 
     private fun completed(output: String) = CommandExecution.Completed(
@@ -133,6 +164,12 @@ class AdbAndroidDeviceGatewayTest {
             scale: 100
             ${AdbConstants.POWER_MARKER}
             mWakefulness=Asleep
+            ${AdbConstants.CHARACTERISTICS_MARKER}
+            nosdcard
+            ${AdbConstants.DISPLAY_SIZE_MARKER}
+            Physical size: 1440x3040
+            ${AdbConstants.DISPLAY_DENSITY_MARKER}
+            Physical density: 560
         """.trimIndent()
         val COMMAND_TIMEOUT: Duration = Duration.ofSeconds(COMMAND_TIMEOUT_SECONDS)
     }

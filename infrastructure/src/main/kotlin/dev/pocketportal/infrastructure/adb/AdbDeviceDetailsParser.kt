@@ -3,6 +3,7 @@ package dev.pocketportal.infrastructure.adb
 import dev.pocketportal.domain.device.AndroidChargingState
 import dev.pocketportal.domain.device.AndroidDeviceDetails
 import dev.pocketportal.domain.device.AndroidScreenState
+import dev.pocketportal.domain.device.AndroidDeviceFormFactorClassifier
 
 internal object AdbDeviceDetailsParser {
     fun parse(output: String): AndroidDeviceDetails {
@@ -10,6 +11,19 @@ internal object AdbDeviceDetailsParser {
         val batteryValues = parseKeyValues(sections[AdbConstants.BATTERY_MARKER].orEmpty())
         val batteryLevel = batteryValues[AdbConstants.BATTERY_LEVEL_KEY]?.toIntOrNull()
         val batteryScale = batteryValues[AdbConstants.BATTERY_SCALE_KEY]?.toIntOrNull()
+        val displaySize = parseDisplaySize(
+            sections[AdbConstants.DISPLAY_SIZE_MARKER].orEmpty(),
+        )
+        val displayDensity = parseDisplayDensity(
+            sections[AdbConstants.DISPLAY_DENSITY_MARKER].orEmpty(),
+        )
+        val characteristics = sections
+            .singleValue(AdbConstants.CHARACTERISTICS_MARKER)
+            ?.split(AdbConstants.CHARACTERISTIC_SEPARATOR)
+            ?.map(String::trim)
+            ?.filter(String::isNotBlank)
+            ?.toSet()
+            .orEmpty()
 
         return AndroidDeviceDetails(
             manufacturer = sections.singleValue(AdbConstants.MANUFACTURER_MARKER),
@@ -18,6 +32,12 @@ internal object AdbDeviceDetailsParser {
             batteryPercentage = calculateBatteryPercentage(batteryLevel, batteryScale),
             chargingState = parseChargingState(batteryValues),
             screenState = parseScreenState(sections[AdbConstants.POWER_MARKER].orEmpty()),
+            formFactor = AndroidDeviceFormFactorClassifier.classify(
+                characteristics = characteristics,
+                displayWidthPixels = displaySize?.first,
+                displayHeightPixels = displaySize?.second,
+                displayDensityDpi = displayDensity,
+            ),
         )
     }
 
@@ -87,6 +107,27 @@ internal object AdbDeviceDetailsParser {
         get(marker)
             ?.firstOrNull(String::isNotBlank)
 
+    private fun parseDisplaySize(lines: List<String>): Pair<Int, Int>? {
+        val value = lines.valueAfter(AdbConstants.OVERRIDE_SIZE_PREFIX)
+            ?: lines.valueAfter(AdbConstants.PHYSICAL_SIZE_PREFIX)
+            ?: return null
+        val match = DISPLAY_SIZE_PATTERN.matchEntire(value) ?: return null
+        val width = match.groupValues[DISPLAY_WIDTH_GROUP].toIntOrNull() ?: return null
+        val height = match.groupValues[DISPLAY_HEIGHT_GROUP].toIntOrNull() ?: return null
+        return width to height
+    }
+
+    private fun parseDisplayDensity(lines: List<String>): Int? =
+        (
+            lines.valueAfter(AdbConstants.OVERRIDE_DENSITY_PREFIX)
+                ?: lines.valueAfter(AdbConstants.PHYSICAL_DENSITY_PREFIX)
+            )?.toIntOrNull()
+
+    private fun List<String>.valueAfter(prefix: String): String? =
+        firstOrNull { it.startsWith(prefix) }
+            ?.removePrefix(prefix)
+            ?.trim()
+
     private const val VALUE_OFFSET = 1
     private const val INVALID_SCALE = 0
     private const val PERCENTAGE_SCALE = 100
@@ -98,6 +139,9 @@ internal object AdbDeviceDetailsParser {
         AdbConstants.SDK_LEVEL_MARKER,
         AdbConstants.BATTERY_MARKER,
         AdbConstants.POWER_MARKER,
+        AdbConstants.CHARACTERISTICS_MARKER,
+        AdbConstants.DISPLAY_SIZE_MARKER,
+        AdbConstants.DISPLAY_DENSITY_MARKER,
     )
     private val POWER_KEYS = setOf(
         AdbConstants.BATTERY_AC_POWERED_KEY,
@@ -105,4 +149,7 @@ internal object AdbDeviceDetailsParser {
         AdbConstants.BATTERY_WIRELESS_POWERED_KEY,
         AdbConstants.BATTERY_DOCK_POWERED_KEY,
     )
+    private val DISPLAY_SIZE_PATTERN = Regex("(\\d+)x(\\d+)")
+    private const val DISPLAY_WIDTH_GROUP = 1
+    private const val DISPLAY_HEIGHT_GROUP = 2
 }

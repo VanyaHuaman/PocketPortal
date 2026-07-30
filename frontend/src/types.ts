@@ -10,6 +10,7 @@ export type AndroidDevice = {
   batteryPercentage: number | null;
   chargingState: string;
   screenState: string;
+  formFactor: "phone" | "tablet" | "foldable_clamshell" | "foldable_book" | "unknown";
   observedAtEpochMillis: number;
 };
 

@@ -21,6 +21,7 @@ import dev.pocketportal.domain.device.AndroidConnectionType
 import dev.pocketportal.domain.device.AndroidDevice
 import dev.pocketportal.domain.device.AndroidDeviceDetails
 import dev.pocketportal.domain.device.AndroidDeviceState
+import dev.pocketportal.domain.device.AndroidDeviceFormFactor
 import dev.pocketportal.domain.device.AndroidScreenState
 import dev.pocketportal.domain.device.DeviceSerial
 import io.ktor.client.request.get
@@ -127,6 +128,7 @@ class PocketPortalWebTest {
                                     batteryPercentage = BATTERY_PERCENTAGE,
                                     chargingState = AndroidChargingState.CHARGING,
                                     screenState = AndroidScreenState.ON,
+                                    formFactor = AndroidDeviceFormFactor.PHONE,
                                 ),
                                 observedAtEpochMillis = OBSERVED_AT,
                             ),
@@ -145,6 +147,7 @@ class PocketPortalWebTest {
         assertTrue(body.contains("\"batteryPercentage\":$BATTERY_PERCENTAGE"))
         assertTrue(body.contains("\"connectionType\":\"usb\""))
         assertTrue(body.contains("\"observedAtEpochMillis\":$OBSERVED_AT"))
+        assertTrue(body.contains("\"formFactor\":\"phone\""))
     }
 
     @Test

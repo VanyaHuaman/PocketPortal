@@ -47,6 +47,7 @@ fun main(args: Array<String>) {
         gateway = AdbAndroidDeviceGateway(
             adbPath = config.adb.executablePath,
             timeout = config.adb.timeout,
+            formFactorOverrides = config.adb.formFactorOverrides,
         ),
     )
     val getAndroidDeviceScreenshot = GetAndroidDeviceScreenshotUseCase(

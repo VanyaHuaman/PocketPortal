@@ -4,6 +4,8 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.util.Properties
 import java.time.Duration
+import dev.pocketportal.domain.device.AndroidDeviceFormFactor
+import dev.pocketportal.domain.device.DeviceSerial
 
 data class PocketPortalConfig(
     val host: String,
@@ -27,6 +29,7 @@ data class AdbConfig(
     val timeout: Duration,
     val screenshotMaximumBytes: Long,
     val bridge: AdbBridgeConfig,
+    val formFactorOverrides: Map<DeviceSerial, AndroidDeviceFormFactor>,
 )
 
 data class AdbBridgeConfig(
@@ -83,6 +86,11 @@ object PocketPortalConfigLoader {
             "${AppConstants.ADB_BRIDGE_TOKEN_ENVIRONMENT_VARIABLE} must contain at least " +
                 "${AppConstants.MINIMUM_ADB_BRIDGE_TOKEN_CHARACTERS} characters"
         }
+        val formFactorOverrides = (
+            environment.read(AppConstants.FORM_FACTOR_OVERRIDES_ENVIRONMENT_VARIABLE)
+                ?: properties.getProperty(AppConstants.FORM_FACTOR_OVERRIDES_PROPERTY)
+                ?: ""
+            ).toFormFactorOverrides()
         val tlsEnabled = (
             environment.read(AppConstants.TLS_ENABLED_ENVIRONMENT_VARIABLE)
                 ?: properties.getProperty(AppConstants.TLS_ENABLED_PROPERTY)
@@ -136,6 +144,7 @@ object PocketPortalConfigLoader {
                     enabled = bridgeEnabled,
                     token = bridgeToken,
                 ),
+                formFactorOverrides = formFactorOverrides,
             ),
             tls = TlsConfig(
                 enabled = tlsEnabled,
@@ -213,6 +222,29 @@ object PocketPortalConfigLoader {
             "$name must be between $MINIMUM_PORT and $MAXIMUM_PORT"
         }
         return value
+    }
+
+    private fun String.toFormFactorOverrides(): Map<DeviceSerial, AndroidDeviceFormFactor> {
+        if (isBlank()) return emptyMap()
+        return split(AppConstants.FORM_FACTOR_OVERRIDE_ENTRY_SEPARATOR).associate { entry ->
+            val separator = entry.indexOf(AppConstants.FORM_FACTOR_OVERRIDE_VALUE_SEPARATOR)
+            require(separator > 0 && separator < entry.lastIndex) {
+                "${AppConstants.FORM_FACTOR_OVERRIDES_PROPERTY} entries must use SERIAL=FORM_FACTOR"
+            }
+            val serial = DeviceSerial(entry.substring(0, separator).trim())
+            val formFactorValue = entry.substring(separator + 1).trim()
+            val formFactor = runCatching {
+                AndroidDeviceFormFactor.valueOf(formFactorValue.uppercase())
+            }.getOrElse {
+                error(
+                    "Unsupported form factor '$formFactorValue'; expected one of " +
+                        AndroidDeviceFormFactor.entries.joinToString { value ->
+                            value.name.lowercase()
+                        },
+                )
+            }
+            serial to formFactor
+        }
     }
 
     private const val MINIMUM_TIMEOUT_MILLIS = 1L

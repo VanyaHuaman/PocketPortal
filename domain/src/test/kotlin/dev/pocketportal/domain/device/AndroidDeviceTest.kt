@@ -21,6 +21,7 @@ class AndroidDeviceTest {
                 batteryPercentage = INVALID_BATTERY_PERCENTAGE,
                 chargingState = AndroidChargingState.UNKNOWN,
                 screenState = AndroidScreenState.UNKNOWN,
+                formFactor = AndroidDeviceFormFactor.UNKNOWN,
             )
         }
     }
