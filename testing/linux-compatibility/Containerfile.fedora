@@ -1,0 +1,8 @@
+FROM fedora:42
+
+WORKDIR /workspace
+COPY deploy/linux/ deploy/linux/
+COPY scripts/install-linux.sh scripts/install-linux.sh
+COPY testing/linux-compatibility/verify-family.sh testing/linux-compatibility/verify-family.sh
+
+RUN ./testing/linux-compatibility/verify-family.sh Fedora-family

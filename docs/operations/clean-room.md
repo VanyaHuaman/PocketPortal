@@ -18,3 +18,13 @@ The test:
 8. Removes the temporary container.
 
 This does not replace a Linux-host installation test. systemd, udev, USB permissions, ADB ownership, scrcpy, upgrades, and rollback require a disposable VM or real host. Ubuntu is currently the first real-host validation.
+
+## Distribution compatibility checks
+
+PocketPortal also builds minimal Debian and Fedora containers around `install-linux.sh`:
+
+```bash
+./testing/linux-compatibility/run.sh
+```
+
+These checks prove that distribution detection and package-manager guidance work without an Ubuntu-only gate. They intentionally stop at the first missing prerequisite. Containers do not prove user-systemd, lingering, udev, USB, or physical-device behavior; those remain real-host or booted-VM checks.

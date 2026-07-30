@@ -62,6 +62,12 @@ This builds PocketPortal in a fresh Linux JDK image using the normal bootstrap, 
 
 Clean-room settings live in [`testing/clean-room/clean-room.env`](./testing/clean-room/clean-room.env). This harness validates portable application installation; it does not replace Linux-host testing for systemd, udev, USB, ADB, scrcpy, or physical devices.
 
+Minimal Debian and Fedora compatibility containers verify that the Linux installer detects both package-manager families, provides the correct prerequisite guidance, and never rejects them merely for not being Ubuntu:
+
+```bash
+./testing/linux-compatibility/run.sh
+```
+
 ## Documentation site
 
 Build the MkDocs Material site with:
@@ -87,6 +93,7 @@ The script creates an isolated `.venv-docs` environment and installs the pinned 
 - `app`: composition root and executable service
 - `frontend`: React application, added with the first dashboard feature
 - `testing/clean-room`: Podman-based fresh-Linux installation smoke test
+- `testing/linux-compatibility`: Debian- and Fedora-family installer contract tests
 - `docs`: public MkDocs Material documentation
 - `deploy/linux`: distribution-neutral configuration and user-systemd service templates
 - `scripts/install-linux.sh`: resumable Linux install, upgrade, health check, and rollback

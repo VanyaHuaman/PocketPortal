@@ -1,0 +1,54 @@
+name: Verify
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  application:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Set up Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: gradle
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Verify application
+        run: ./scripts/verify.sh
+
+  linux-compatibility:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        distribution:
+          - debian
+          - fedora
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Verify installer on ${{ matrix.distribution }}
+        run: >-
+          docker build
+          --file testing/linux-compatibility/Containerfile.${{ matrix.distribution }}
+          --tag pocketportal-linux-${{ matrix.distribution }}:test
+          .
