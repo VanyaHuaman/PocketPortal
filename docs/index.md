@@ -15,9 +15,9 @@ PocketPortal is a self-hosted control plane that makes real Android hardware ava
   <a href="assets/android-device-dashboard.png">
     <img
       src="assets/android-device-dashboard.png"
-      alt="PocketPortal live inventory showing an online Pixel 4 XL connected over USB and ADB"
-      width="2592"
-      height="1138"
+      alt="PocketPortal live inventory showing an online Pixel 4 XL with Android version, battery, screen, connection, and observation details"
+      width="2602"
+      height="1238"
     >
   </a>
   <figcaption>Live inventory from the first Android device connected to PocketPortal.</figcaption>
