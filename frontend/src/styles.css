@@ -234,7 +234,7 @@ h1 {
 }
 
 .device-visual-tablet {
-  --device-frame-width: 104px;
+  --device-frame-width: 88px;
   --device-frame-height: 138px;
   --device-frame-radius: 12px;
 }
@@ -293,7 +293,8 @@ h1 {
   position: absolute;
   width: calc(var(--device-frame-width) - 4px);
   height: calc(var(--device-frame-height) - 4px);
-  object-fit: cover;
+  background: #000;
+  object-fit: contain;
   object-position: center;
   border-radius: calc(var(--device-frame-radius) - 3px);
   opacity: 0;
