@@ -7,6 +7,9 @@ repo_name: VanyaHuaman/PocketPortal
 
 theme:
   name: material
+  font: false
+  icon:
+    logo: material/cellphone-link
   features:
     - content.code.copy
     - navigation.footer
@@ -15,20 +18,12 @@ theme:
     - search.highlight
     - search.suggest
   palette:
-    - media: "(prefers-color-scheme: light)"
-      scheme: default
-      primary: indigo
-      accent: cyan
-      toggle:
-        icon: material/weather-night
-        name: Switch to dark mode
-    - media: "(prefers-color-scheme: dark)"
-      scheme: slate
-      primary: indigo
-      accent: cyan
-      toggle:
-        icon: material/weather-sunny
-        name: Switch to light mode
+    scheme: slate
+    primary: custom
+    accent: custom
+
+extra_css:
+  - stylesheets/pocketportal.css
 
 nav:
   - Home: index.md
@@ -45,6 +40,7 @@ nav:
 markdown_extensions:
   - admonition
   - attr_list
+  - md_in_html
   - pymdownx.details
   - pymdownx.highlight:
       anchor_linenums: true

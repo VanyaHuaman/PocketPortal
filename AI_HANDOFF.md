@@ -42,6 +42,7 @@ The platform must remain application-project agnostic. PocketPortal does not mod
 - A later clean-room rerun was blocked because the existing Podman machine immediately returned to `stopped` after startup; the application build and complete test suite still pass, and the real-host installer path passed.
 - A public-facing MkDocs Material site now lives in `docs`, builds strictly with `./scripts/docs.sh build`, and has a GitHub Pages workflow.
 - The docs dependency is pinned to MkDocs Material 9.7.7 and remains isolated from the PocketPortal application.
+- The documentation site now shares the dashboard's PocketPortal visual language through `docs/stylesheets/pocketportal.css`: dark forest canvas, lime accents, subtle grid texture, rounded panels, system typography, and styled navigation, search, code, tables, and admonitions.
 - The docs build passes locally and in GitHub Actions.
 - The public repository is `https://github.com/VanyaHuaman/PocketPortal`.
 - GitHub Pages uses the Actions workflow and is live at `https://vanyahuaman.github.io/PocketPortal/`.
