@@ -14,6 +14,7 @@ data class PocketPortalConfig(
 data class AdbConfig(
     val executablePath: String,
     val timeout: Duration,
+    val screenshotMaximumBytes: Long,
 )
 
 fun interface EnvironmentReader {
@@ -40,6 +41,10 @@ object PocketPortalConfigLoader {
             ?: properties.required(AppConstants.ADB_PATH_PROPERTY)
         val adbTimeoutText = environment.read(AppConstants.ADB_TIMEOUT_ENVIRONMENT_VARIABLE)
             ?: properties.required(AppConstants.ADB_TIMEOUT_PROPERTY)
+        val screenshotMaximumBytesText =
+            environment.read(AppConstants.SCREENSHOT_MAXIMUM_BYTES_ENVIRONMENT_VARIABLE)
+                ?: properties.getProperty(AppConstants.SCREENSHOT_MAXIMUM_BYTES_PROPERTY)
+                ?: AppConstants.DEFAULT_SCREENSHOT_MAXIMUM_BYTES.toString()
 
         return PocketPortalConfig(
             host = host,
@@ -48,6 +53,9 @@ object PocketPortalConfigLoader {
             adb = AdbConfig(
                 executablePath = adbPath,
                 timeout = adbTimeoutText.toPositiveDurationMillis(AppConstants.ADB_TIMEOUT_PROPERTY),
+                screenshotMaximumBytes = screenshotMaximumBytesText.toPositiveLong(
+                    AppConstants.SCREENSHOT_MAXIMUM_BYTES_PROPERTY,
+                ),
             ),
         )
     }
@@ -98,5 +106,12 @@ object PocketPortalConfigLoader {
         return Duration.ofMillis(millis)
     }
 
+    private fun String.toPositiveLong(name: String): Long {
+        val value = toLongOrNull() ?: error("$name must be a valid integer")
+        require(value >= MINIMUM_POSITIVE_VALUE) { "$name must be greater than zero" }
+        return value
+    }
+
     private const val MINIMUM_TIMEOUT_MILLIS = 1L
+    private const val MINIMUM_POSITIVE_VALUE = 1L
 }

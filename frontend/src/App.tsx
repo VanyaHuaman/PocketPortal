@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { DASHBOARD_CONSTANTS, DEVICE_STATES } from "./constants";
+import { API_PATHS, DASHBOARD_CONSTANTS, DEVICE_STATES } from "./constants";
 import { fetchDevices } from "./deviceApi";
 import type { AndroidDevice } from "./types";
 
@@ -17,6 +17,8 @@ function formatDeviceFamily(device: AndroidDevice): string {
 
 function DeviceCard({ device }: { device: AndroidDevice }) {
   const isOnline = device.state === DEVICE_STATES.online;
+  const [screenshotRevision, setScreenshotRevision] = useState(() => Date.now());
+  const [screenshotAvailable, setScreenshotAvailable] = useState(false);
   const batteryLabel = device.batteryPercentage == null
     ? DASHBOARD_CONSTANTS.unknownValueLabel
     : `${device.batteryPercentage}%`;
@@ -25,11 +27,34 @@ function DeviceCard({ device }: { device: AndroidDevice }) {
     : `Android ${device.androidVersion}`;
   const observedLabel = new Date(device.observedAtEpochMillis).toLocaleTimeString();
 
+  useEffect(() => {
+    setScreenshotAvailable(false);
+    if (!isOnline) return;
+
+    const timer = window.setInterval(
+      () => setScreenshotRevision(Date.now()),
+      DASHBOARD_CONSTANTS.screenshotRefreshIntervalMilliseconds,
+    );
+    return () => window.clearInterval(timer);
+  }, [device.serial, isOnline]);
+
+  const screenshotUrl =
+    `${API_PATHS.deviceScreenshot(device.serial)}?revision=${screenshotRevision}`;
+
   return (
     <article className="device-card">
-      <div className="device-visual" aria-hidden="true">
+      <div className="device-visual">
         <span className="speaker" />
-        <span className="android-mark">A</span>
+        <span className="android-mark" aria-hidden="true">A</span>
+        {isOnline && (
+          <img
+            className={`device-screen ${screenshotAvailable ? "device-screen-visible" : ""}`}
+            src={screenshotUrl}
+            alt={`Current screen of ${formatModel(device.model)}`}
+            onLoad={() => setScreenshotAvailable(true)}
+            onError={() => setScreenshotAvailable(false)}
+          />
+        )}
         <span className={`signal ${isOnline ? "signal-online" : ""}`} />
       </div>
       <div className="device-copy">

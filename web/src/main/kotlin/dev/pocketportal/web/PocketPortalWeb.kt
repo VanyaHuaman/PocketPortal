@@ -3,13 +3,19 @@ package dev.pocketportal.web
 import dev.pocketportal.application.status.GetSystemStatus
 import dev.pocketportal.application.device.DeviceDiscoveryResult
 import dev.pocketportal.application.device.GetAndroidDevices
+import dev.pocketportal.application.device.GetAndroidDeviceScreenshot
+import dev.pocketportal.application.device.DeviceScreenshotFailure
+import dev.pocketportal.application.device.DeviceScreenshotResult
 import dev.pocketportal.domain.device.AndroidDevice
+import dev.pocketportal.domain.device.DeviceSerial
+import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.server.application.Application
 import io.ktor.server.application.install
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.server.response.respond
+import io.ktor.server.response.respondBytes
 import io.ktor.server.routing.get
 import io.ktor.server.routing.routing
 import io.ktor.server.http.content.staticResources
@@ -18,6 +24,7 @@ import kotlinx.serialization.Serializable
 fun Application.pocketPortalWeb(
     getSystemStatus: GetSystemStatus,
     getAndroidDevices: GetAndroidDevices,
+    getAndroidDeviceScreenshot: GetAndroidDeviceScreenshot,
 ) {
     install(ContentNegotiation) {
         json()
@@ -57,12 +64,60 @@ fun Application.pocketPortalWeb(
             }
         }
 
+        get(WebConstants.DEVICE_SCREENSHOT_PATH) {
+            val serialValue = call.parameters[WebConstants.DEVICE_SERIAL_PARAMETER]
+            val serial = try {
+                DeviceSerial(requireNotNull(serialValue))
+            } catch (_: IllegalArgumentException) {
+                call.respond(
+                    HttpStatusCode.BadRequest,
+                    ErrorResponse(
+                        WebConstants.SCREENSHOT_UNAVAILABLE_CODE,
+                        DeviceScreenshotFailure.DEVICE_NOT_FOUND.name.lowercase(),
+                    ),
+                )
+                return@get
+            }
+
+            when (val result = getAndroidDeviceScreenshot(serial)) {
+                is DeviceScreenshotResult.Available -> {
+                    call.response.headers.append(
+                        WebConstants.OBSERVED_AT_HEADER,
+                        result.observedAtEpochMillis.toString(),
+                    )
+                    call.respondBytes(
+                        bytes = result.pngBytes,
+                        contentType = ContentType.Image.PNG,
+                        status = HttpStatusCode.OK,
+                    )
+                }
+                is DeviceScreenshotResult.Unavailable ->
+                    call.respond(
+                        status = result.reason.toHttpStatus(),
+                        message = ErrorResponse(
+                            code = WebConstants.SCREENSHOT_UNAVAILABLE_CODE,
+                            detail = result.reason.name.lowercase(),
+                        ),
+                    )
+            }
+        }
+
         staticResources(
             remotePath = WebConstants.FRONTEND_ROUTE,
             basePackage = WebConstants.FRONTEND_RESOURCE_PACKAGE,
             index = WebConstants.FRONTEND_INDEX_FILE,
         )
     }
+}
+
+private fun DeviceScreenshotFailure.toHttpStatus(): HttpStatusCode = when (this) {
+    DeviceScreenshotFailure.DEVICE_NOT_FOUND -> HttpStatusCode.NotFound
+    DeviceScreenshotFailure.DEVICE_NOT_ONLINE -> HttpStatusCode.Conflict
+    DeviceScreenshotFailure.OUTPUT_TOO_LARGE -> HttpStatusCode.PayloadTooLarge
+    DeviceScreenshotFailure.TOOL_NOT_FOUND,
+    DeviceScreenshotFailure.TIMED_OUT,
+    DeviceScreenshotFailure.COMMAND_FAILED,
+    -> HttpStatusCode.ServiceUnavailable
 }
 
 @Serializable

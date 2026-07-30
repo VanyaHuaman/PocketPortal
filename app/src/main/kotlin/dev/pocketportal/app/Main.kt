@@ -2,8 +2,10 @@ package dev.pocketportal.app
 
 import dev.pocketportal.application.status.GetSystemStatusUseCase
 import dev.pocketportal.application.device.GetAndroidDevicesUseCase
+import dev.pocketportal.application.device.GetAndroidDeviceScreenshotUseCase
 import dev.pocketportal.application.diagnostics.RunHostDiagnosticsUseCase
 import dev.pocketportal.infrastructure.adb.AdbAndroidDeviceGateway
+import dev.pocketportal.infrastructure.adb.AdbAndroidDeviceScreenshotGateway
 import dev.pocketportal.infrastructure.diagnostics.LinuxHostDiagnosticsGateway
 import dev.pocketportal.infrastructure.time.SystemClock
 import dev.pocketportal.web.pocketPortalWeb
@@ -38,6 +40,13 @@ fun main(args: Array<String>) {
             timeout = config.adb.timeout,
         ),
     )
+    val getAndroidDeviceScreenshot = GetAndroidDeviceScreenshotUseCase(
+        gateway = AdbAndroidDeviceScreenshotGateway(
+            adbPath = config.adb.executablePath,
+            timeout = config.adb.timeout,
+            maximumBytes = config.adb.screenshotMaximumBytes,
+        ),
+    )
 
     embeddedServer(
         factory = CIO,
@@ -47,6 +56,7 @@ fun main(args: Array<String>) {
         pocketPortalWeb(
             getSystemStatus = getSystemStatus,
             getAndroidDevices = getAndroidDevices,
+            getAndroidDeviceScreenshot = getAndroidDeviceScreenshot,
         )
     }.start(wait = true)
 }

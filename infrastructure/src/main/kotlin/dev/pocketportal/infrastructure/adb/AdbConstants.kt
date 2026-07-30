@@ -47,4 +47,7 @@ internal object AdbConstants {
     const val WIRELESS_SERIAL_SEPARATOR = ':'
     const val EMULATOR_SERIAL_PREFIX = "emulator-"
     const val UNKNOWN_OBSERVATION_TIME_EPOCH_MILLIS = 0L
+    const val EXEC_OUT_COMMAND = "exec-out"
+    const val SCREEN_CAPTURE_COMMAND = "screencap"
+    const val PNG_OUTPUT_FLAG = "-p"
 }

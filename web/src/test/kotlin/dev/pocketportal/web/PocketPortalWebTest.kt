@@ -4,6 +4,9 @@ import dev.pocketportal.application.status.GetSystemStatus
 import dev.pocketportal.application.device.DeviceDiscoveryFailure
 import dev.pocketportal.application.device.DeviceDiscoveryResult
 import dev.pocketportal.application.device.GetAndroidDevices
+import dev.pocketportal.application.device.GetAndroidDeviceScreenshot
+import dev.pocketportal.application.device.DeviceScreenshotResult
+import dev.pocketportal.application.device.DeviceScreenshotFailure
 import dev.pocketportal.domain.ServiceState
 import dev.pocketportal.domain.SystemStatus
 import dev.pocketportal.domain.PocketPortalConstants
@@ -16,7 +19,10 @@ import dev.pocketportal.domain.device.AndroidScreenState
 import dev.pocketportal.domain.device.DeviceSerial
 import io.ktor.client.request.get
 import io.ktor.client.statement.bodyAsText
+import io.ktor.client.statement.bodyAsBytes
 import io.ktor.http.HttpStatusCode
+import io.ktor.http.ContentType
+import io.ktor.http.contentType
 import io.ktor.server.testing.testApplication
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -37,6 +43,7 @@ class PocketPortalWebTest {
                 getAndroidDevices = GetAndroidDevices {
                     DeviceDiscoveryResult.Available(emptyList())
                 },
+                getAndroidDeviceScreenshot = unavailableScreenshot(),
             )
         }
 
@@ -61,6 +68,7 @@ class PocketPortalWebTest {
                 getAndroidDevices = GetAndroidDevices {
                     DeviceDiscoveryResult.Unavailable(DeviceDiscoveryFailure.TOOL_NOT_FOUND)
                 },
+                getAndroidDeviceScreenshot = unavailableScreenshot(),
             )
         }
 
@@ -111,6 +119,7 @@ class PocketPortalWebTest {
                         ),
                     )
                 },
+                getAndroidDeviceScreenshot = unavailableScreenshot(),
             )
         }
 
@@ -137,6 +146,7 @@ class PocketPortalWebTest {
                 getAndroidDevices = GetAndroidDevices {
                     DeviceDiscoveryResult.Available(emptyList())
                 },
+                getAndroidDeviceScreenshot = unavailableScreenshot(),
             )
         }
 
@@ -144,6 +154,37 @@ class PocketPortalWebTest {
 
         assertEquals(HttpStatusCode.OK, response.status)
         assertTrue(response.bodyAsText().contains("<title>PocketPortal</title>"))
+    }
+
+    @Test
+    fun `screenshot endpoint returns bounded png bytes`() = testApplication {
+        application {
+            pocketPortalWeb(
+                getSystemStatus = GetSystemStatus {
+                    SystemStatus(
+                        service = PocketPortalConstants.SERVICE_NAME,
+                        state = ServiceState.READY,
+                        observedAtEpochMillis = OBSERVED_AT,
+                    )
+                },
+                getAndroidDevices = GetAndroidDevices {
+                    DeviceDiscoveryResult.Available(emptyList())
+                },
+                getAndroidDeviceScreenshot = GetAndroidDeviceScreenshot {
+                    DeviceScreenshotResult.Available(PNG_BYTES, OBSERVED_AT)
+                },
+            )
+        }
+
+        val response = client.get("/api/devices/$DEVICE_SERIAL/screenshot")
+
+        assertEquals(HttpStatusCode.OK, response.status)
+        assertEquals(ContentType.Image.PNG, response.contentType())
+        assertTrue(response.bodyAsBytes().contentEquals(PNG_BYTES))
+    }
+
+    private fun unavailableScreenshot() = GetAndroidDeviceScreenshot {
+        DeviceScreenshotResult.Unavailable(DeviceScreenshotFailure.DEVICE_NOT_FOUND)
     }
 
     private companion object {
@@ -155,5 +196,6 @@ class PocketPortalWebTest {
         const val ANDROID_VERSION = "13"
         const val SDK_LEVEL = 33
         const val BATTERY_PERCENTAGE = 75
+        val PNG_BYTES = byteArrayOf(0x89.toByte(), 0x50, 0x4E, 0x47)
     }
 }

@@ -59,3 +59,29 @@ If ADB is missing, times out, or exits unsuccessfully, PocketPortal responds wit
   "detail": "tool_not_found"
 }
 ```
+
+## Android device screenshot
+
+```http
+GET /api/devices/{serial}/screenshot
+```
+
+For an online device, this returns the current screen as `image/png`. The
+`X-PocketPortal-Observed-At` response header contains the capture timestamp in
+epoch milliseconds. PocketPortal verifies the serial against the current ADB
+inventory, runs a fixed `adb exec-out screencap -p` command, enforces the
+configured timeout, and bounds the captured bytes.
+
+Possible failures are:
+
+| Status | Detail |
+| --- | --- |
+| `400` | The serial is missing or invalid |
+| `404` | The serial is not in the current ADB inventory |
+| `409` | The device exists but is not online |
+| `413` | The PNG exceeds `android.screenshot.maximumBytes` |
+| `503` | ADB is missing, timed out, or the capture command failed |
+
+Screenshots contain whatever is visible on the physical device. Keep this
+unauthenticated development endpoint bound to localhost. Remote screenshot
+access belongs behind PocketPortal authentication and a private network.

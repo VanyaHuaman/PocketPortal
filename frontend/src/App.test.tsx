@@ -40,6 +40,10 @@ describe("PocketPortal dashboard", () => {
     expect(screen.getByText("01")).toBeInTheDocument();
     expect(screen.getByText("Android 13 · SDK 33")).toBeInTheDocument();
     expect(screen.getByText("75% · charging")).toBeInTheDocument();
+    expect(screen.getByAltText("Current screen of Pixel 4 XL")).toHaveAttribute(
+      "src",
+      expect.stringMatching(/^\/api\/devices\/ABC123\/screenshot\?revision=\d+$/),
+    );
   });
 
   it("shows a recoverable error state", async () => {

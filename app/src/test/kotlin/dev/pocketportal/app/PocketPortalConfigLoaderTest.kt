@@ -15,6 +15,7 @@ class PocketPortalConfigLoaderTest {
             ${AppConstants.PORT_PROPERTY}=$FILE_PORT
             ${AppConstants.ADB_PATH_PROPERTY}=$FILE_ADB_PATH
             ${AppConstants.ADB_TIMEOUT_PROPERTY}=$FILE_ADB_TIMEOUT_MILLIS
+            ${AppConstants.SCREENSHOT_MAXIMUM_BYTES_PROPERTY}=$SCREENSHOT_MAXIMUM_BYTES
             """.trimIndent(),
         )
         val environmentValues = mapOf(
@@ -31,6 +32,7 @@ class PocketPortalConfigLoaderTest {
         assertEquals(ENVIRONMENT_PORT, config.port)
         assertEquals(FILE_ADB_PATH, config.adb.executablePath)
         assertEquals(FILE_ADB_TIMEOUT_MILLIS, config.adb.timeout.toMillis())
+        assertEquals(SCREENSHOT_MAXIMUM_BYTES, config.adb.screenshotMaximumBytes)
     }
 
     @Test
@@ -44,6 +46,7 @@ class PocketPortalConfigLoaderTest {
             ${AppConstants.PORT_PROPERTY}=$FILE_PORT
             ${AppConstants.ADB_PATH_PROPERTY}=$FILE_ADB_PATH
             ${AppConstants.ADB_TIMEOUT_PROPERTY}=$FILE_ADB_TIMEOUT_MILLIS
+            ${AppConstants.SCREENSHOT_MAXIMUM_BYTES_PROPERTY}=$SCREENSHOT_MAXIMUM_BYTES
             """.trimIndent(),
         )
 
@@ -60,6 +63,7 @@ class PocketPortalConfigLoaderTest {
         assertEquals(FILE_HOST, config.host)
         assertEquals(FILE_PORT, config.port)
         assertEquals(FILE_ADB_PATH, config.adb.executablePath)
+        assertEquals(SCREENSHOT_MAXIMUM_BYTES, config.adb.screenshotMaximumBytes)
     }
 
     private companion object {
@@ -69,5 +73,6 @@ class PocketPortalConfigLoaderTest {
         const val ENVIRONMENT_PORT = 9000
         const val FILE_ADB_PATH = "test-adb"
         const val FILE_ADB_TIMEOUT_MILLIS = 4000L
+        const val SCREENSHOT_MAXIMUM_BYTES = 8_388_608L
     }
 }

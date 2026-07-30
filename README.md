@@ -25,7 +25,7 @@ The bootstrap checks prerequisites, downloads pinned build dependencies through 
 
 Then open <http://localhost:8080> for the read-only device dashboard.
 
-The dashboard refreshes <http://localhost:8080/api/devices> automatically and shows state, connection type, Android/SDK version, battery and charging status, screen state, and observation time. If a detail query fails, discovery remains available with partial data. If ADB itself is unavailable, the dashboard presents a recoverable error without exposing raw process output.
+The dashboard refreshes <http://localhost:8080/api/devices> automatically and shows state, connection type, Android/SDK version, battery and charging status, screen state, observation time, and a bounded low-frequency screenshot for each online device. If a detail query or screenshot fails, discovery remains available with partial data. If ADB itself is unavailable, the dashboard presents a recoverable error without exposing raw process output.
 
 Use a different port with:
 
@@ -33,7 +33,7 @@ Use a different port with:
 POCKETPORTAL_PORT=9090 ./gradlew :app:run
 ```
 
-Runtime defaults live in [`config/pocketportal.properties`](./config/pocketportal.properties) and are packaged with the application. Override the config path with `POCKETPORTAL_CONFIG`. Individual overrides currently include `POCKETPORTAL_HOST`, `POCKETPORTAL_PORT`, `POCKETPORTAL_ADB_PATH`, and `POCKETPORTAL_ADB_TIMEOUT_MILLIS`.
+Runtime defaults live in [`config/pocketportal.properties`](./config/pocketportal.properties) and are packaged with the application. Override the config path with `POCKETPORTAL_CONFIG`. Individual overrides currently include `POCKETPORTAL_HOST`, `POCKETPORTAL_PORT`, `POCKETPORTAL_ADB_PATH`, `POCKETPORTAL_ADB_TIMEOUT_MILLIS`, and `POCKETPORTAL_SCREENSHOT_MAXIMUM_BYTES`.
 
 On a Linux host with user systemd, build the distribution elsewhere and install it with:
 

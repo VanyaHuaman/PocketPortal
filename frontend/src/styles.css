@@ -240,6 +240,21 @@ h1 {
   font: 500 1.25rem ui-monospace, "SFMono-Regular", monospace;
 }
 
+.device-screen {
+  position: absolute;
+  width: 66px;
+  height: 138px;
+  object-fit: cover;
+  object-position: center;
+  border-radius: 11px;
+  opacity: 0;
+  transition: opacity 180ms ease;
+}
+
+.device-screen-visible {
+  opacity: 1;
+}
+
 .signal {
   position: absolute;
   right: 18px;

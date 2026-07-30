@@ -15,4 +15,8 @@ object AppConstants {
     const val ADB_TIMEOUT_ENVIRONMENT_VARIABLE = "POCKETPORTAL_ADB_TIMEOUT_MILLIS"
     const val ADB_PATH_PROPERTY = "android.adb.path"
     const val ADB_TIMEOUT_PROPERTY = "android.adb.timeoutMillis"
+    const val SCREENSHOT_MAXIMUM_BYTES_ENVIRONMENT_VARIABLE =
+        "POCKETPORTAL_SCREENSHOT_MAXIMUM_BYTES"
+    const val SCREENSHOT_MAXIMUM_BYTES_PROPERTY = "android.screenshot.maximumBytes"
+    const val DEFAULT_SCREENSHOT_MAXIMUM_BYTES = 8_388_608L
 }
