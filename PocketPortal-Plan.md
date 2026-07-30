@@ -28,7 +28,7 @@ The Ubuntu home server will act as the always-on device host. Android devices wi
 - Build automated tests alongside each feature instead of postponing testing until the end.
 - Avoid unexplained literal values in implementation code. Put deploy-time values in documented configuration and stable protocol or product values in clearly owned named constants.
 - Make first-time installation, upgrades, configuration, verification, and recovery straightforward and well documented.
-- Support multiple authenticated users with clear roles and exclusive control sessions.
+- Defer PocketPortal-managed users, roles, and exclusive leases until V2 and a real multi-user need.
 - Leave room for future testing, automation, health monitoring, shared viewing, and reservations.
 
 ## 3. Non-goals for the first version
@@ -139,16 +139,21 @@ Security rules:
 
 - Do not port-forward ADB, scrcpy WebSockets, Android Studio, or remote desktop from the home router.
 - Bind PocketPortal services to localhost or the Tailscale interface where feasible.
-- Require authentication even when a service is reachable only through Tailscale.
+- Use Tailscale identity and access policies as the V1 reachability boundary.
 - Use Tailscale access policies to restrict which users and devices can reach PocketPortal.
 - Give the work Mac access only if personal VPN software and access to home systems comply with employer policy.
 - Do not place personal Apple credentials or Android secrets on a work-managed computer.
 - Keep the server, ADB tools, scrcpy, remote-desktop software, and dashboard dependencies updated.
 - Record security-relevant events without logging device contents, clipboard data, or credentials.
 
-### Multi-user access model
+### Multi-user access model — V2
 
-PocketPortal will be multi-user-ready from its first dashboard release, even if the initial deployment has only one administrator.
+V1 is a single-owner personal lab. It will not add a user database, application
+login, roles, capability policies, or control leases. PocketPortal remains
+private through Tailscale and must not be exposed through router forwarding.
+
+Add the following model in V2 only when another real user needs independent
+access:
 
 Initial roles:
 
@@ -189,7 +194,7 @@ Application identity comes from inspected artifact metadata rather than server c
 
 Approved Maestro and Appium suites declare their compatible package names, platforms, entrypoints, trusted source revisions, and safe environment requirements. At run time, a user selects a device, compatible artifact, approved suite, and optional environment profile.
 
-Roles are server-wide in V1. Authorized users share the same device pool, artifact catalog, approved suite catalog, and permitted test results. Exclusive leases prevent device conflicts. Use tags and package-name filters for organization rather than project containers.
+When multi-user support exists, roles should be server-wide initially. Authorized users share the same device pool, artifact catalog, approved suite catalog, and permitted test results. Exclusive leases prevent device conflicts. Use tags and package-name filters for organization rather than project containers.
 
 Add optional namespaces only if real requirements later demand data isolation, separate administrators, device pools, secret scopes, quotas, billing, or retention policies. V1 will not add a hidden workspace or speculative `project_id` to every record.
 
@@ -271,9 +276,8 @@ Operational considerations:
 
 ### Phase 3: PocketPortal dashboard MVP
 
-Build a small authenticated web application that provides:
+Build a small single-owner web application reachable only through the private network that provides:
 
-- Authenticated user identity and administrator, operator, or viewer role
 - Device name and photograph or model image
 - Online, offline, unauthorized, or recovery status
 - ADB serial, model, Android version, battery level, and charging state
@@ -281,20 +285,16 @@ Build a small authenticated web application that provides:
 - Current USB or network connection type
 - Latest low-frequency screenshot thumbnail
 - Buttons for refresh, wake, reboot, screenshot, and start-control-session
-- A controlled single-APK upload and installation workflow for operators and administrators
-- An exclusive control lease associated with the authenticated user
-- Current controller and lease duration on each occupied device
-- Automatic expiration and administrator termination of abandoned leases
-- An audit event for every security-relevant action
-- Clear error messages for unauthorized or disconnected devices
+- A controlled single-APK upload and installation workflow
+- Clear error messages for disconnected or unauthorized ADB devices
 
 The backend should invoke a narrow allowlist of predefined operations. It should not initially expose an unrestricted web shell or accept arbitrary ADB commands.
 
-**Exit condition:** A browser provides a trustworthy overview of the Android fleet, safely launches common actions, and attributes every action and control lease to an authenticated user.
+**Exit condition:** A private-network browser provides a trustworthy overview of the Android fleet and safely launches allowlisted single-owner actions.
 
 #### V1 test-app installation
 
-An operator or administrator who holds the target device's control lease may upload and install one `.apk` file. PocketPortal will:
+The trusted V1 owner may upload and install one `.apk` file. PocketPortal will:
 
 1. Accept the upload into size-limited temporary storage.
 2. Calculate and display the file's SHA-256 checksum.
@@ -302,16 +302,16 @@ An operator or administrator who holds the target device's control lease may upl
 4. Display package name, app label, version name, version code, minimum SDK, target SDK, file size, signing-certificate fingerprint, and requested permissions when available.
 5. Compare the uploaded package with the version currently installed on the selected device.
 6. Require confirmation before replacing an installed application, downgrading, clearing data, or uninstalling.
-7. Re-check the user's `app.install` capability and active device lease immediately before execution.
+7. Re-check that the target device is online immediately before execution.
 8. Install through a fixed allowlisted ADB invocation.
 9. Optionally grant declared runtime permissions or launch the app after a successful installation.
 10. Report progress and a device-specific success or failure result.
 11. Delete the temporary file according to a short, explicit retention policy.
-12. Append safe metadata and the result to the audit history.
+12. Record bounded operational metadata without retaining application secrets.
 
 The default replace operation preserves existing application data. Clear-data, downgrade, and uninstall actions remain separate and require explicit confirmation. Uploaded filenames and browser-provided package information are never trusted; PocketPortal derives metadata from the APK itself.
 
-V1 supports a single APK on a single leased device per installation job. It does not accept arbitrary installation flags.
+V1 supports a single APK on a single device per installation job. It does not accept arbitrary installation flags.
 
 ### Phase 4: Session integration
 
@@ -360,6 +360,9 @@ Selection criteria:
 
 ### Phase 7: Multi-user expansion
 
+- Add PocketPortal-managed or external identity sessions.
+- Add administrator, operator, and viewer roles backed by capability checks.
+- Add exclusive device leases and bounded audit events.
 - Add device groups and grant users access through group membership.
 - Add control requests with accept, reject, and transfer workflows.
 - Add shared viewing with one controller and clearly identified observers.
@@ -491,10 +494,11 @@ The following stack is the committed direction for PocketPortal V1:
 - **Remote graphical access:** A secure remote-desktop solution restricted to Tailscale
 - **Service supervision:** systemd
 - **Reverse proxy and TLS:** Caddy or a Tailscale-native HTTPS option
-- **Authentication:** Tailscale identity where supported, plus an application session
-- **Authorization:** Administrator, operator, and viewer roles backed by capability checks
-- **Session concurrency:** Exclusive device-control leases with inactivity expiry
-- **Audit:** Append-only security and device-action events
+- **V1 access boundary:** Tailscale identity and policy
+- **V2 authentication:** PocketPortal or external application sessions
+- **V2 authorization:** Administrator, operator, and viewer roles backed by capability checks
+- **V2 session concurrency:** Exclusive device-control leases with inactivity expiry
+- **V2 audit:** Append-only security and device-action events
 
 ### Runtime layout
 
@@ -624,14 +628,12 @@ GET    /api/devices/{id}
 POST   /api/devices/{id}/wake
 POST   /api/devices/{id}/reboot
 POST   /api/devices/{id}/screenshots
-POST   /api/devices/{id}/leases
-DELETE /api/devices/{id}/leases/current
 POST   /api/artifacts/inspect
 POST   /api/devices/{id}/installations
 GET    /api/installations/{installationId}
 ```
 
-Use one-way Server-Sent Events for V1 dashboard updates such as device connections, disconnections, battery changes, action results, and lease changes. Introduce WebSockets later when browser-native control requires bidirectional touch, keyboard, clipboard, heartbeat, or stream-signaling messages.
+Use one-way Server-Sent Events for V1 dashboard updates such as device connections, disconnections, battery changes, and action results. Introduce WebSockets later when browser-native control requires bidirectional touch, keyboard, clipboard, heartbeat, or stream-signaling messages.
 
 ### Backend boundaries
 
@@ -822,7 +824,7 @@ Two users must never inject input into the same device accidentally. Lease acqui
 
 ### Untrusted APK and AAB uploads
 
-Treat every uploaded APK or AAB as untrusted binary input. Enforce upload-size and concurrency limits, use server-generated job directories, never execute filenames, inspect with pinned tooling, and delete temporary files predictably. Only users with `app.install` and a current device lease may initiate installation. AAB jobs must target an explicit validated device and must not share generated APK-set paths. Audit metadata and outcomes without retaining signing secrets, application secrets, or unrestricted tool output.
+Treat every uploaded APK or AAB as untrusted binary input. Enforce upload-size and concurrency limits, use server-generated job directories, never execute filenames, inspect with pinned tooling, and delete temporary files predictably. V1 must revalidate the explicit target device immediately before installation. V2 adds capability and lease checks. AAB jobs must not share generated APK-set paths. Record bounded metadata and outcomes without retaining signing secrets, application secrets, or unrestricted tool output.
 
 ### Untrusted test execution
 
@@ -845,13 +847,10 @@ PocketPortal's first useful release is successful when:
 - Access works remotely through the private network without public port forwarding.
 - A server restart restores device discovery automatically.
 - The dashboard accurately reports device state and does not expose arbitrary command execution.
-- Every dashboard request and action is associated with an authenticated user.
-- Only one user can control a device at a time, with automatic release of abandoned leases.
-- Administrators can identify and terminate active leases, and relevant actions appear in the audit history.
-- An authorized lease holder can inspect and install a single test APK, see its verified metadata, confirm replacement, and receive a clear result.
-- Unauthorized users and users without the target device lease cannot install applications.
+- Tailscale policy restricts V1 access to the trusted owner without public port forwarding.
+- The owner can inspect and install a single test APK, see its verified metadata, confirm replacement, and receive a clear result.
 - Temporary APK uploads are size-limited, use server-generated paths, and are deleted according to policy.
-- V1.5 can install an AAB onto one explicitly leased device using an isolated, device-specific APK set and a recorded non-secret signing mode.
+- V1.5 can install an AAB onto one explicit device using an isolated, device-specific APK set and a recorded non-secret signing mode.
 - The iPhone access path is documented and works through the selected personal Mac.
 
 ## 15. First implementation checklist
@@ -879,7 +878,6 @@ PocketPortal's first useful release is successful when:
 - [ ] Test several simultaneous scrcpy sessions.
 - [ ] Verify APK metadata inspection with representative debug and release builds.
 - [ ] Verify single-device APK installation, replacement with preserved data, optional launch, failure reporting, and temporary-file cleanup.
-- [ ] Verify that viewers and operators without the target lease cannot install an APK.
 - [ ] Use the local `aabx` project as a behavioral reference and capture representative AAB success and failure cases.
 - [ ] Port the AAB build/install workflow into a Kotlin `BundleArtifactService` using fixed argument lists.
 - [ ] Verify explicit multi-device targeting, unique job directories, signing modes, concurrent-job isolation, failure handling, and cleanup.

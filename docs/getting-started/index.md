@@ -1,6 +1,9 @@
 # Getting started
 
-PocketPortal currently provides the backend foundation and Android device discovery. The web dashboard, authentication, leases, and application installation are planned but not implemented yet.
+PocketPortal currently provides a single-owner web dashboard, Android device
+discovery and observations, bounded screenshots, and a safe wake action.
+Tailscale-private access and application installation are planned next;
+PocketPortal-managed authentication and leases are deferred to V2.
 
 ## Requirements
 

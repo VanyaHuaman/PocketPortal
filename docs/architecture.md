@@ -30,4 +30,6 @@ A capability may become a separate project when it has a real host, trust, runti
 - Restricted Maestro and Appium workers
 - A browser-streaming gateway, if streaming develops distinct operational needs
 
-PocketPortal remains the control plane and source of truth for identity, authorization, device inventory, leases, job intent, and audit history.
+PocketPortal V1 remains the single-owner control plane for device inventory and
+job intent. Identity, authorization, leases, and security audit history enter
+the core only with the V2 multi-user requirement.

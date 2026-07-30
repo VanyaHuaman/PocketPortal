@@ -82,9 +82,9 @@ Possible failures are:
 | `413` | The PNG exceeds `android.screenshot.maximumBytes` |
 | `503` | ADB is missing, timed out, or the capture command failed |
 
-Screenshots contain whatever is visible on the physical device. Keep this
-unauthenticated development endpoint bound to localhost. Remote screenshot
-access belongs behind PocketPortal authentication and a private network.
+Screenshots contain whatever is visible on the physical device. Keep direct
+access bound to localhost. V1 remote access belongs behind Tailscale identity
+and policy; PocketPortal-managed login is deferred to V2.
 
 ## Wake Android device
 
@@ -103,6 +103,6 @@ returns `404`, a known but non-online device returns `409`, and an ADB execution
 failure returns `503`.
 
 !!! warning
-    The current development endpoint has no application authentication. Keep
-    PocketPortal bound to localhost until identity, permissions, leases, and
-    audit events protect remote device actions.
+    The current endpoint has no application login. Keep PocketPortal bound to
+    localhost until Tailscale-private access is configured, and never expose
+    device actions through router port forwarding.

@@ -10,7 +10,7 @@ This document gives a new AI assistant enough context to continue PocketPortal w
 
 PocketPortal is a self-hosted mobile device lab for six physical Android devices and one iPhone. A Linux home server is the always-on Android host; the user's current machine runs Ubuntu. Users should eventually be able to monitor devices, obtain exclusive control, install test applications, and run approved Maestro or Appium tests remotely.
 
-The platform must remain application-project agnostic. PocketPortal does not model source repositories, projects, workspaces, or tenants in V1. It manages users, devices, application artifacts, approved test suites, leases, runs, and audit events. Package metadata and tags provide organization.
+The platform must remain application-project agnostic. PocketPortal does not model source repositories, projects, workspaces, tenants, users, roles, or leases in V1. It is a single-owner personal lab managing devices, application artifacts, approved test suites, and runs. Package metadata and tags provide organization.
 
 ## Current status
 
@@ -90,7 +90,7 @@ The platform must remain application-project agnostic. PocketPortal does not mod
 - Process supervision: systemd
 - TLS/reverse proxy: Caddy or Tailscale-native HTTPS
 - Deployment: run directly on Linux with user systemd for V1; do not put the hardware-facing service in Docker
-- Authentication: Tailscale identity where practical, followed by a PocketPortal application session
+- V1 access boundary: Tailscale identity and policy; no PocketPortal login database
 
 The Ktor service should serve the compiled React application so V1 deploys as one application service.
 
@@ -100,7 +100,7 @@ The initial structure should separate the application composition root, framewor
 
 Testing is part of the definition of done. Use fast unit tests for domain rules and use cases, contract/integration tests for adapters and SQLDelight, Ktor API tests for authorization and validation, focused React component tests, and a small critical-path browser suite. Put ADB behind a deterministic fake for routine tests and keep real-device tests in an explicit opt-in hardware suite. CI should run all checks that do not require attached hardware.
 
-PocketPortal is the lean control plane and source of truth for users, authorization, device inventory, leases, job intent, and audit history. Platform-specific or risky execution can live in separate projects. Likely candidates are the Mac-based Apple Bridge, restricted Maestro/Appium workers, and possibly a future browser-streaming gateway. Keep AAB/APK tooling local in V1 unless it gains genuine independent consumers.
+PocketPortal is the lean V1 control plane for device inventory and job intent. User authorization, leases, and security audit history are V2 concerns. Platform-specific or risky execution can live in separate projects. Likely candidates are the Mac-based Apple Bridge, restricted Maestro/Appium workers, and possibly a future browser-streaming gateway. Keep AAB/APK tooling local in V1 unless it gains genuine independent consumers.
 
 Separate projects communicate through small authenticated and versioned contracts, initially using HTTPS/JSON unless measured needs justify more. Commands need stable job IDs, idempotency, heartbeats, timeouts, cancellation, and contract tests. Workers must not access PocketPortal's SQLite file directly. Do not add a broker, service mesh, generic event bus, or microservice infrastructure speculatively.
 
@@ -114,18 +114,15 @@ The documentation site is public-facing content only. `PocketPortal-Plan.md` and
 
 V1 should provide:
 
-- An authenticated dashboard showing Android device presence, model, OS version, battery, charging state, connection type, last-seen time, and a low-frequency screenshot
-- Administrator, operator, and viewer roles backed internally by capability checks
-- One exclusive control lease per device, with inactivity expiry and administrator takeover
+- A Tailscale-private single-owner dashboard showing Android device presence, model, OS version, battery, charging state, connection type, last-seen time, and a low-frequency screenshot
 - Safe actions such as refresh, wake, reboot, screenshot, and starting a control session
-- Upload, inspection, confirmation, and installation of one APK onto one leased device
-- Append-only audit events for security-relevant actions
+- Upload, inspection, confirmation, and installation of one APK onto one explicit device
 - Clear handling of offline, unauthorized, recovery, and failed-action states
 - Existing scrcpy sessions accessed through a secure remote graphical session initially
 
 V1 must not expose arbitrary shell commands, arbitrary ADB commands, Appium endpoints, uploaded test code, or public control services.
 
-## Multi-user model
+## Multi-user model — V2
 
 - Administrator: manages users, devices, settings, leases, and sessions
 - Operator: controls permitted devices and runs approved actions
@@ -133,7 +130,7 @@ V1 must not expose arbitrary shell commands, arbitrary ADB commands, Appium endp
 - Every action must be associated with an authenticated user.
 - Multiple viewers may be supported later, but only one controller may hold the device lease.
 - Typed input, clipboard contents, credentials, notifications, and other session contents must not be audited.
-- Roles are server-wide in V1. Add namespaces only if real isolation, quota, billing, retention, or separate-administration requirements emerge.
+- Roles should be server-wide initially. Add namespaces only if real isolation, quota, billing, retention, or separate-administration requirements emerge.
 
 ## Application and test model
 
@@ -151,7 +148,8 @@ Approved Maestro and Appium suites should declare compatible package names, plat
 
 ## Roadmap highlights
 
-- V1: Android dashboard, users, leases, safe actions, and single-APK installation
+- V1: Single-owner Android dashboard, Tailscale-private access, safe actions, and single-APK installation
+- V2: PocketPortal users, roles, capabilities, leases, and security audit events when multi-user demand is real
 - V1.5: Device-specific AAB installation and one trusted Maestro smoke-test workflow
 - Later: Restricted Appium workers, broader Maestro support, parallel Android test execution, and improved browser-native sessions
 - iPhone automation: A dedicated Mac mini or similar Mac host running Xcode, Appium/XCUITest, and WebDriverAgent
