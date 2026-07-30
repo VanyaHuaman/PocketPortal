@@ -4,6 +4,7 @@ plugins {
 }
 
 application {
+    applicationName = "pocketportal"
     mainClass.set("dev.pocketportal.app.MainKt")
 }
 

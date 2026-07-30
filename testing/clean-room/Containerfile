@@ -21,7 +21,7 @@ RUN groupadd --system "${SERVICE_USER}" \
     && chown --recursive "${SERVICE_USER}:${SERVICE_USER}" "${INSTALL_DIRECTORY}" "${CONFIG_DIRECTORY}"
 
 COPY --from=builder --chown=${SERVICE_USER}:${SERVICE_USER} \
-    /workspace/app/build/install/app/ ${INSTALL_DIRECTORY}/
+    /workspace/app/build/install/pocketportal/ ${INSTALL_DIRECTORY}/
 COPY --chown=${SERVICE_USER}:${SERVICE_USER} \
     testing/clean-room/pocketportal.properties ${CONFIG_DIRECTORY}/pocketportal.properties
 
@@ -31,4 +31,4 @@ USER ${SERVICE_USER}
 WORKDIR ${INSTALL_DIRECTORY}
 
 EXPOSE 8080
-ENTRYPOINT ["/opt/pocketportal/bin/app"]
+ENTRYPOINT ["/opt/pocketportal/bin/pocketportal"]

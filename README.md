@@ -78,6 +78,7 @@ The script creates an isolated `.venv-docs` environment and installs the pinned 
 - `frontend`: React application, added with the first dashboard feature
 - `testing/clean-room`: Podman-based fresh-Linux installation smoke test
 - `docs`: public MkDocs Material documentation
+- `deploy/ubuntu`: localhost-only configuration and user-systemd service templates
 
 PocketPortal is a modular monolith. Capabilities move into separate projects only when a concrete host, trust, runtime, lifecycle, scaling, or reuse boundary requires it.
 
