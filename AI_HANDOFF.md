@@ -46,6 +46,8 @@ The platform must remain application-project agnostic. PocketPortal does not mod
 - The docs build passes locally and in GitHub Actions.
 - The public repository is `https://github.com/VanyaHuaman/PocketPortal`.
 - GitHub Pages uses the Actions workflow and is live at `https://vanyahuaman.github.io/PocketPortal/`.
+- The repository Pages setting must remain `build_type: workflow`. It was previously left in legacy `/docs` mode, which caused Jekyll to overwrite the successful MkDocs deployment with raw source and broken routes. This was corrected through the GitHub API on July 29, 2026.
+- `scripts/verify-docs-site.sh` checks every public documentation route, the MkDocs generator marker, and the branded stylesheet after each Pages deployment.
 - The initial Pages build and deployment completed successfully on July 29, 2026, and both public URLs were verified over HTTPS.
 - The first React/TypeScript dashboard slice is implemented and served from the Ktor artifact. It is deliberately read-only, shows responsive cards for `/api/devices`, refreshes every five seconds, and handles loading, empty, and recoverable error states.
 - Frontend dependencies are pinned in `frontend/package-lock.json`; Gradle builds and tests the frontend as part of the normal verification path. The clean-room image uses a dedicated Node build stage and copies only the compiled assets into the JVM build.

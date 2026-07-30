@@ -63,6 +63,12 @@ jobs:
       pages: write
       id-token: write
     steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
       - name: Deploy GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+      - name: Verify deployed documentation routes
+        run: ./scripts/verify-docs-site.sh
