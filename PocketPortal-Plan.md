@@ -120,6 +120,12 @@ interface, credential storage, updates, and alternative private transports.
 Do not begin with a GUI or invent a custom public tunnel, VPN, or authentication
 protocol.
 
+Off-LAN connectivity is deliberately the final roadmap decision. Do not choose
+or integrate Tailscale, WireGuard, Cloudflare Access, a relay, public SSH, or
+VPN-coexistence behavior until the home-network device lab, control workflow,
+installation workflow, automation, and PocketPortal Connect prototype are
+proven. Never use router port forwarding for ADB or PocketPortal as a shortcut.
+
 ### Wireless debugging
 
 Wireless debugging can be retained as a fallback for temporarily undocked devices. It should be limited to the trusted home network and not exposed directly to the internet. DHCP reservations may improve reliability, but USB should remain the default connection.
@@ -883,6 +889,7 @@ PocketPortal's first useful release is successful when:
 - [x] Prove a Mac Android Studio session using local ADB plus a per-device network ADB tunnel without sharing PocketPortal's server daemon.
 - [x] Verify interactive device access plus application installation and launch from Mac Android Studio through the per-device tunnel.
 - [ ] Prototype PocketPortal Connect as a separate SSH-backed CLI only when repeated manual client setup justifies it.
+- [ ] Evaluate off-LAN access and coexistence with personal or corporate VPNs last, after the local product workflow is complete.
 - [ ] Test several simultaneous scrcpy sessions.
 - [ ] Verify APK metadata inspection with representative debug and release builds.
 - [ ] Verify single-device APK installation, replacement with preserved data, optional launch, failure reporting, and temporary-file cleanup.
