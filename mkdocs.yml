@@ -1,0 +1,56 @@
+# yaml-language-server: $schema=https://squidfunk.github.io/mkdocs-material/schema.json
+site_name: PocketPortal
+site_description: A self-hosted control plane for a physical mobile-device lab
+site_url: https://vanyahuaman.github.io/PocketPortal/
+repo_url: https://github.com/VanyaHuaman/PocketPortal
+repo_name: VanyaHuaman/PocketPortal
+
+theme:
+  name: material
+  features:
+    - content.code.copy
+    - navigation.footer
+    - navigation.sections
+    - navigation.top
+    - search.highlight
+    - search.suggest
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: cyan
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: cyan
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+
+nav:
+  - Home: index.md
+  - Getting started:
+      - Overview: getting-started/index.md
+      - Development setup: getting-started/development.md
+  - Configuration: configuration.md
+  - API: api.md
+  - Architecture: architecture.md
+  - Operations:
+      - Clean-room testing: operations/clean-room.md
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - pymdownx.details
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.superfences
+  - tables
+
+plugins:
+  - search
+
+strict: true

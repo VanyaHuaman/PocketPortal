@@ -28,6 +28,9 @@ The platform must remain application-project agnostic. PocketPortal does not mod
 - Live discovery was verified against an attached Android device, including correct reporting of its unauthorized state.
 - `./testing/clean-room/run.sh` builds and tests in a fresh Linux JDK image, assembles the distribution, starts it as a non-root user in a clean JRE image with external configuration, probes readiness, and removes the temporary container.
 - The Podman clean-room test passed end to end on July 29, 2026, including graceful missing-ADB behavior.
+- A public-facing MkDocs Material site now lives in `docs`, builds strictly with `./scripts/docs.sh build`, and has a GitHub Pages workflow.
+- The docs dependency is pinned to MkDocs Material 9.7.7 and remains isolated from the PocketPortal application.
+- The docs build passes locally. Remote creation and deployment are pending because the configured `gh` token for `VanyaHuaman` is expired.
 - The React frontend has deliberately not been added yet; add it with the first real dashboard slice.
 - The selected USB hub has been purchased.
 - Six Anker USB-A-to-USB-C data cables have been purchased as three two-packs.
@@ -72,6 +75,8 @@ Separate projects communicate through small authenticated and versioned contract
 Runtime defaults currently live in `config/pocketportal.properties` and are packaged into the application. `POCKETPORTAL_CONFIG` selects an external file. Server and ADB values have targeted environment overrides. New runtime settings must use the same typed and validated configuration boundary. Named constants live with the module that owns their meaning.
 
 The clean-room harness lives in `testing/clean-room`. It is installation-test infrastructure, not the production deployment model. Its settings are in `clean-room.env`, it targets a named Podman connection, and it uses a unique temporary container name. Continue to deploy the hardware-facing service directly on Ubuntu. A disposable Ubuntu VM test is still needed for systemd, udev, USB, ADB, scrcpy, upgrade, and rollback behavior.
+
+The documentation site is public-facing content only. `PocketPortal-Plan.md` and `AI_HANDOFF.md` are not part of MkDocs navigation or output, but they would still be visible as repository source if the GitHub repository is public. Confirm that publication decision before creating a public remote.
 
 ## V1 scope
 

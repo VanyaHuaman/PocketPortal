@@ -52,6 +52,22 @@ This builds PocketPortal in a fresh Linux JDK image using the normal bootstrap, 
 
 Clean-room settings live in [`testing/clean-room/clean-room.env`](./testing/clean-room/clean-room.env). This harness validates portable application installation; it does not replace Ubuntu-host testing for systemd, udev, USB, ADB, scrcpy, or physical devices.
 
+## Documentation site
+
+Build the MkDocs Material site with:
+
+```bash
+./scripts/docs.sh build
+```
+
+Preview it locally with:
+
+```bash
+./scripts/docs.sh serve
+```
+
+The script creates an isolated `.venv-docs` environment and installs the pinned documentation dependency. GitHub Actions builds the site strictly for pull requests and deploys it to GitHub Pages after documentation changes reach `main`.
+
 ## Structure
 
 - `domain`: framework-free business models and rules
@@ -61,6 +77,7 @@ Clean-room settings live in [`testing/clean-room/clean-room.env`](./testing/clea
 - `app`: composition root and executable service
 - `frontend`: React application, added with the first dashboard feature
 - `testing/clean-room`: Podman-based fresh-Linux installation smoke test
+- `docs`: public MkDocs Material documentation
 
 PocketPortal is a modular monolith. Capabilities move into separate projects only when a concrete host, trust, runtime, lifecycle, scaling, or reuse boundary requires it.
 

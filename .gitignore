@@ -9,3 +9,5 @@ frontend/node_modules/
 *.db-wal
 .env
 .env.local
+.venv-docs/
+site/
