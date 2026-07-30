@@ -112,6 +112,14 @@ monitoring, local `adb connect`, authorization guidance, and explicit
 Studio session hosted on Linux through remote desktop. Do not turn the server
 ADB smart socket or a device ADB port into a publicly listening service.
 
+If repeated setup justifies implementation, build this as a separate
+**PocketPortal Connect** companion project rather than adding desktop concerns
+to the server. Start with a small CLI using SSH as the proven transport behind
+an internal transport boundary. It may later gain a minimal macOS/Windows
+interface, credential storage, updates, and alternative private transports.
+Do not begin with a GUI or invent a custom public tunnel, VPN, or authentication
+protocol.
+
 ### Wireless debugging
 
 Wireless debugging can be retained as a fallback for temporarily undocked devices. It should be limited to the trusted home network and not exposed directly to the internet. DHCP reservations may improve reliability, but USB should remain the default connection.
@@ -874,7 +882,7 @@ PocketPortal's first useful release is successful when:
 - [ ] Test all Android devices with scrcpy.
 - [x] Prove a Mac Android Studio session using local ADB plus a per-device network ADB tunnel without sharing PocketPortal's server daemon.
 - [x] Verify interactive device access plus application installation and launch from Mac Android Studio through the per-device tunnel.
-- [ ] Turn the validated per-device tunnel into an optional, version-aware client setup helper with explicit teardown.
+- [ ] Prototype PocketPortal Connect as a separate SSH-backed CLI only when repeated manual client setup justifies it.
 - [ ] Test several simultaneous scrcpy sessions.
 - [ ] Verify APK metadata inspection with representative debug and release builds.
 - [ ] Verify single-device APK installation, replacement with preserved data, optional launch, failure reporting, and temporary-file cleanup.
