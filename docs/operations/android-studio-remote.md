@@ -85,29 +85,45 @@ explicit.
     Android's per-client authorization, never port-forward the device from the
     router, and disable network ADB when the development session ends.
 
-## PocketPortal Connect prototype
+## PocketPortal Connect
 
 The repository now contains the first `pocketportal-connect` CLI and a
 disabled-by-default server bridge. Unlike the SSH proof, the bridge accepts
 only binary ADB traffic for one validated device serial. It does not provide a
 Linux shell or arbitrary network forwarding.
 
-Build the client distribution with:
+### Easy macOS launcher
+
+The macOS launcher builds the client when necessary, finds ADB from the Android
+SDK or `PATH`, copies the server certificate on first use, retrieves the bridge
+token over SSH, and stores that token in the current user's login Keychain:
 
 ```bash
-./gradlew :connect:installDist
-```
-
-The client listens only on `127.0.0.1`, asks the local ADB daemon to connect to
-that port, and carries the bytes over an authenticated WebSocket:
-
-```bash
-export POCKETPORTAL_CONNECT_TOKEN='a-random-token-with-at-least-32-characters'
-./connect/build/install/pocketportal-connect/bin/pocketportal-connect \
+./scripts/connect-macos.sh \
   --server wss://192.168.0.151:8443 \
-  --serial DEVICE_SERIAL \
-  --ca-certificate /path/to/pocketportal-ca.pem
+  --ssh-target vanya@192.168.0.151 \
+  --serial DEVICE_SERIAL
 ```
+
+The first run may request SSH and Keychain approval. Subsequent runs reuse the
+certificate and Keychain credential. To shorten the recurring command, set
+these in the shell profile:
+
+```bash
+export POCKETPORTAL_CONNECT_SERVER='wss://192.168.0.151:8443'
+export POCKETPORTAL_CONNECT_SSH_TARGET='vanya@192.168.0.151'
+```
+
+Then connecting a device requires only:
+
+```bash
+./scripts/connect-macos.sh --serial DEVICE_SERIAL
+```
+
+The underlying client listens only on `127.0.0.1`, asks the local ADB daemon
+to connect to that port, and carries the bytes over an authenticated WebSocket.
+Advanced users may still build and invoke it directly with
+`./gradlew :connect:installDist`.
 
 Non-loopback servers must use `wss://`; unencrypted `ws://` is accepted only
 for loopback development. The server-side bridge is enabled with

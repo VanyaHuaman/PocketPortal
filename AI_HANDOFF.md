@@ -114,6 +114,10 @@ focused on devices, browser control, and application installation.
   XL running Android 13 through authenticated WSS. Ctrl+C closed the tunnel,
   removed the local ADB entry, restored the Pixel to its USB serial on the
   server, and left PocketPortal active.
+- `scripts/connect-macos.sh` provides the first low-friction client launcher.
+  It builds Connect when missing, discovers ADB from the Android SDK or `PATH`,
+  bootstraps the server certificate and bridge token over SSH on first use,
+  stores the token in the macOS login Keychain, and starts the scoped tunnel.
 - The live server currently reports two USB Android devices: Pixel 4 XL serial
   `9B011FFBA00A1L` and Lenovo TB336FU serial `HNY09D8P`.
 - Android observations now classify phone and tablet form factors from physical
