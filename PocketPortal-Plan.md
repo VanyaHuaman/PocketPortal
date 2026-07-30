@@ -100,11 +100,17 @@ daemon. Direct `ADB_SERVER_SOCKET` access is therefore not a supported
 PocketPortal client workflow.
 
 A later PocketPortal client helper must keep Android Studio on its normal local
-ADB server and use only a separately proven, isolated device transport, or
-guide users into an Android Studio session hosted on Linux through remote
-desktop. It should validate versions, monitor connectivity, explain failures,
-and restore normal behavior when the session closes. Do not turn remote ADB
-into a publicly listening service to make setup easier.
+ADB server. The successful follow-up enabled authenticated network ADB on one
+Pixel, forwarded one client-local port through SSH to that phone, and connected
+the Mac's normal local ADB daemon. Android Studio then saw the Pixel without
+sharing or terminating PocketPortal's server daemon.
+
+A client helper should automate that proven per-device session lifecycle:
+version and reachability checks, per-device local port allocation, tunnel
+monitoring, local `adb connect`, authorization guidance, and explicit
+`adb disconnect` plus return to USB-only mode. The fallback remains an Android
+Studio session hosted on Linux through remote desktop. Do not turn the server
+ADB smart socket or a device ADB port into a publicly listening service.
 
 ### Wireless debugging
 
@@ -867,7 +873,8 @@ PocketPortal's first useful release is successful when:
 - [x] Add the first bounded safe action: wake an online Android display with a fixed key event.
 - [x] Replace the validated manual runtime procedure with a resumable installer, prerequisite doctor, versioned upgrades, health verification, automatic failure recovery, and explicit rollback.
 - [ ] Test all Android devices with scrcpy.
-- [ ] Turn the validated remote-ADB experiment into an optional, version-aware client setup helper after the Android Studio workflow is proven end to end.
+- [x] Prove a Mac Android Studio session using local ADB plus a per-device network ADB tunnel without sharing PocketPortal's server daemon.
+- [ ] Turn the validated per-device tunnel into an optional, version-aware client setup helper with explicit teardown.
 - [ ] Test several simultaneous scrcpy sessions.
 - [ ] Verify APK metadata inspection with representative debug and release builds.
 - [ ] Verify single-device APK installation, replacement with preserved data, optional launch, failure reporting, and temporary-file cleanup.
