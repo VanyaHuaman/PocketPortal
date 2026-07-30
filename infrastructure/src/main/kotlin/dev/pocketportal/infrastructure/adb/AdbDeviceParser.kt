@@ -1,19 +1,23 @@
 package dev.pocketportal.infrastructure.adb
 
 import dev.pocketportal.domain.device.AndroidDevice
+import dev.pocketportal.domain.device.AndroidConnectionType
 import dev.pocketportal.domain.device.AndroidDeviceState
 import dev.pocketportal.domain.device.DeviceSerial
 
 internal object AdbDeviceParser {
-    fun parse(output: String): List<AndroidDevice> =
+    fun parse(
+        output: String,
+        observedAtEpochMillis: Long = AdbConstants.UNKNOWN_OBSERVATION_TIME_EPOCH_MILLIS,
+    ): List<AndroidDevice> =
         output.lineSequence()
             .map(String::trim)
             .filter(String::isNotEmpty)
             .filterNot { it == AdbConstants.DEVICE_LIST_HEADER }
-            .mapNotNull(::parseLine)
+            .mapNotNull { parseLine(it, observedAtEpochMillis) }
             .toList()
 
-    private fun parseLine(line: String): AndroidDevice? {
+    private fun parseLine(line: String, observedAtEpochMillis: Long): AndroidDevice? {
         val columns = line.split(COLUMN_SEPARATOR)
         if (columns.size < MINIMUM_COLUMN_COUNT) {
             return null
@@ -29,6 +33,12 @@ internal object AdbDeviceParser {
             state = parseState(columns[STATE_COLUMN]),
             model = metadata[AdbConstants.MODEL_METADATA_KEY],
             product = metadata[AdbConstants.PRODUCT_METADATA_KEY],
+            connectionType = parseConnectionType(
+                serial = columns[SERIAL_COLUMN],
+                metadata = metadata,
+            ),
+            details = null,
+            observedAtEpochMillis = observedAtEpochMillis,
         )
     }
 
@@ -50,6 +60,16 @@ internal object AdbDeviceParser {
         AdbConstants.BOOTLOADER_STATE -> AndroidDeviceState.BOOTLOADER
         AdbConstants.SIDELOAD_STATE -> AndroidDeviceState.SIDELOAD
         else -> AndroidDeviceState.UNKNOWN
+    }
+
+    private fun parseConnectionType(
+        serial: String,
+        metadata: Map<String, String>,
+    ): AndroidConnectionType = when {
+        AdbConstants.USB_METADATA_KEY in metadata -> AndroidConnectionType.USB
+        AdbConstants.WIRELESS_SERIAL_SEPARATOR in serial -> AndroidConnectionType.WIRELESS
+        serial.startsWith(AdbConstants.EMULATOR_SERIAL_PREFIX) -> AndroidConnectionType.UNKNOWN
+        else -> AndroidConnectionType.USB
     }
 
     private const val SERIAL_COLUMN = 0

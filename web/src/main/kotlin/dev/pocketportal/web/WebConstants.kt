@@ -8,4 +8,5 @@ object WebConstants {
     const val FRONTEND_ROUTE = "/"
     const val FRONTEND_RESOURCE_PACKAGE = "frontend"
     const val FRONTEND_INDEX_FILE = "index.html"
+    const val UNKNOWN_VALUE = "unknown"
 }

@@ -9,8 +9,21 @@ function formatModel(model: string | null): string {
   return model?.replaceAll("_", " ") ?? DASHBOARD_CONSTANTS.unknownModelLabel;
 }
 
+function formatDeviceFamily(device: AndroidDevice): string {
+  return [device.manufacturer, device.product]
+    .filter((value): value is string => value != null && value.length > 0)
+    .join(" · ") || "Android";
+}
+
 function DeviceCard({ device }: { device: AndroidDevice }) {
   const isOnline = device.state === DEVICE_STATES.online;
+  const batteryLabel = device.batteryPercentage == null
+    ? DASHBOARD_CONSTANTS.unknownValueLabel
+    : `${device.batteryPercentage}%`;
+  const androidLabel = device.androidVersion == null
+    ? DASHBOARD_CONSTANTS.unknownValueLabel
+    : `Android ${device.androidVersion}`;
+  const observedLabel = new Date(device.observedAtEpochMillis).toLocaleTimeString();
 
   return (
     <article className="device-card">
@@ -22,7 +35,7 @@ function DeviceCard({ device }: { device: AndroidDevice }) {
       <div className="device-copy">
         <div className="device-heading">
           <div>
-            <p className="eyebrow">{device.product ?? "Android"}</p>
+            <p className="eyebrow">{formatDeviceFamily(device)}</p>
             <h2>{formatModel(device.model)}</h2>
           </div>
           <span className={`state-badge state-${device.state}`}>{device.state}</span>
@@ -34,7 +47,23 @@ function DeviceCard({ device }: { device: AndroidDevice }) {
           </div>
           <div>
             <dt>Connection</dt>
-            <dd>USB · ADB</dd>
+            <dd>{device.connectionType} · ADB</dd>
+          </div>
+          <div>
+            <dt>Android</dt>
+            <dd>{androidLabel}{device.sdkLevel == null ? "" : ` · SDK ${device.sdkLevel}`}</dd>
+          </div>
+          <div>
+            <dt>Battery</dt>
+            <dd>{batteryLabel} · {device.chargingState.replaceAll("_", " ")}</dd>
+          </div>
+          <div>
+            <dt>Screen</dt>
+            <dd>{device.screenState}</dd>
+          </div>
+          <div>
+            <dt>Observed</dt>
+            <dd>{observedLabel}</dd>
           </div>
         </dl>
       </div>

@@ -32,7 +32,7 @@ The platform must remain application-project agnostic. PocketPortal does not mod
 - The authorized Pixel 4 XL is reported online by the live `/api/devices` endpoint.
 - `pocketportal doctor` now checks Linux distribution confidence, Java, ADB, connected devices, user systemd, lingering, service state, and current-boot kernel segfaults through tested clean-architecture boundaries.
 - `scripts/install-linux.sh` provides distribution-neutral resumable installation and upgrade, immutable version activation, API health checks, automatic restoration after failed health checks, and explicit rollback. The old `install-ubuntu.sh` entrypoint is a compatibility wrapper.
-- Version `0.1.3-SNAPSHOT` is active on the real server. Earlier upgrade and rollback behavior was verified between `0.1.0` and `0.1.1`; subsequent dashboard and generalized-Linux releases were deployed through the same versioned upgrade path.
+- Version `0.1.4-SNAPSHOT` is active on the real server. Earlier upgrade and rollback behavior was verified between `0.1.0` and `0.1.1`; subsequent dashboard, generalized-Linux, and enriched-observation releases were deployed through the same versioned upgrade path.
 - The installed `~/.local/bin/pocketportal doctor` finds the conventional user config automatically. On the server it reports one authorized Pixel 4 XL, active service, enabled lingering, and zero current-boot segfaults.
 - Ubuntu 25.10 is the first real-host validation but is end-of-life, so doctor and the generalized installer emit an upgrade warning.
 - Minimal Debian 13 and Fedora 42 container checks validate non-Ubuntu distribution detection, prerequisite guidance, initial installation, idempotent reinstall, versioned upgrade, health-gated activation, and rollback. Service and health commands are deterministic fakes, so these checks do not claim real systemd, udev, USB, or physical-device validation.
@@ -52,6 +52,7 @@ The platform must remain application-project agnostic. PocketPortal does not mod
 - `scripts/verify-docs-site.sh` checks every public documentation route, the MkDocs generator marker, and the branded stylesheet after each Pages deployment.
 - The initial Pages build and deployment completed successfully on July 29, 2026, and both public URLs were verified over HTTPS.
 - The first React/TypeScript dashboard slice is implemented and served from the Ktor artifact. It is deliberately read-only, shows responsive cards for `/api/devices`, refreshes every five seconds, and handles loading, empty, and recoverable error states.
+- Online device observations now include manufacturer, Android and SDK versions, battery percentage, charging status, screen state, connection type, and observation time. One bounded static ADB shell script collects details per online device; failures preserve the discovered device with partial data.
 - Frontend dependencies are pinned in `frontend/package-lock.json`; Gradle builds and tests the frontend as part of the normal verification path. The clean-room image uses a dedicated Node build stage and copies only the compiled assets into the JVM build.
 - The selected USB hub has been purchased.
 - Six Anker USB-A-to-USB-C data cables have been purchased as three two-packs.

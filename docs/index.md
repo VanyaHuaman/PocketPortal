@@ -32,7 +32,7 @@ PocketPortal is a self-hosted control plane that makes real Android hardware ava
   </div>
   <div class="pp-capability">
     <h3>Live Android inventory</h3>
-    <p>Typed ADB discovery reports online, offline, unauthorized, and other device states with automatic refresh.</p>
+    <p>Typed ADB observations report device state, Android version, battery, charging, screen state, connection type, and last-seen time.</p>
   </div>
   <div class="pp-capability">
     <h3>Operationally safe</h3>

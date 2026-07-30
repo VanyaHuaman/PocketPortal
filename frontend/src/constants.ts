@@ -6,6 +6,7 @@ export const DASHBOARD_CONSTANTS = {
   refreshIntervalMilliseconds: 5_000,
   unknownModelLabel: "Unknown Android device",
   unavailableMessage: "Device discovery is temporarily unavailable.",
+  unknownValueLabel: "Unknown",
 } as const;
 
 export const DEVICE_STATES = {

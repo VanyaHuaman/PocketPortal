@@ -17,6 +17,14 @@ describe("PocketPortal dashboard", () => {
               state: "online",
               model: "Pixel_4_XL",
               product: "coral",
+              connectionType: "usb",
+              manufacturer: "Google",
+              androidVersion: "13",
+              sdkLevel: 33,
+              batteryPercentage: 75,
+              chargingState: "charging",
+              screenState: "on",
+              observedAtEpochMillis: 1_234,
             },
           ],
         }),
@@ -30,6 +38,8 @@ describe("PocketPortal dashboard", () => {
     expect(screen.getByText("ABC123")).toBeInTheDocument();
     expect(screen.getByText("online")).toBeInTheDocument();
     expect(screen.getByText("01")).toBeInTheDocument();
+    expect(screen.getByText("Android 13 · SDK 33")).toBeInTheDocument();
+    expect(screen.getByText("75% · charging")).toBeInTheDocument();
   });
 
   it("shows a recoverable error state", async () => {

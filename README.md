@@ -6,7 +6,8 @@ PocketPortal is a lean, self-hosted control plane for a physical mobile-device l
 
 - Java 17 or newer
 - Node.js 20 or newer and npm for frontend development
-- ADB and scrcpy will be required when Android integration is introduced
+- ADB for Android discovery and observations
+- scrcpy for the later interactive-control phase
 
 ## First setup
 
@@ -24,7 +25,7 @@ The bootstrap checks prerequisites, downloads pinned build dependencies through 
 
 Then open <http://localhost:8080> for the read-only device dashboard.
 
-The dashboard refreshes <http://localhost:8080/api/devices> automatically and shows typed states such as `online`, `offline`, and `unauthorized`. If ADB is missing, times out, or fails, it presents a recoverable error without exposing raw process output.
+The dashboard refreshes <http://localhost:8080/api/devices> automatically and shows state, connection type, Android/SDK version, battery and charging status, screen state, and observation time. If a detail query fails, discovery remains available with partial data. If ADB itself is unavailable, the dashboard presents a recoverable error without exposing raw process output.
 
 Use a different port with:
 

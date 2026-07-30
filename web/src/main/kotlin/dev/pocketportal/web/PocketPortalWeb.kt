@@ -83,6 +83,14 @@ data class AndroidDeviceResponse(
     val state: String,
     val model: String?,
     val product: String?,
+    val connectionType: String,
+    val manufacturer: String?,
+    val androidVersion: String?,
+    val sdkLevel: Int?,
+    val batteryPercentage: Int?,
+    val chargingState: String,
+    val screenState: String,
+    val observedAtEpochMillis: Long,
 )
 
 @Serializable
@@ -96,4 +104,12 @@ private fun AndroidDevice.toResponse(): AndroidDeviceResponse = AndroidDeviceRes
     state = state.name.lowercase(),
     model = model,
     product = product,
+    connectionType = connectionType.name.lowercase(),
+    manufacturer = details?.manufacturer,
+    androidVersion = details?.androidVersion,
+    sdkLevel = details?.sdkLevel,
+    batteryPercentage = details?.batteryPercentage,
+    chargingState = details?.chargingState?.name?.lowercase() ?: WebConstants.UNKNOWN_VALUE,
+    screenState = details?.screenState?.name?.lowercase() ?: WebConstants.UNKNOWN_VALUE,
+    observedAtEpochMillis = observedAtEpochMillis,
 )

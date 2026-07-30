@@ -11,7 +11,22 @@ class AndroidDeviceTest {
         }
     }
 
+    @Test
+    fun `rejects a battery percentage outside the physical range`() {
+        assertFailsWith<IllegalArgumentException> {
+            AndroidDeviceDetails(
+                manufacturer = null,
+                androidVersion = null,
+                sdkLevel = null,
+                batteryPercentage = INVALID_BATTERY_PERCENTAGE,
+                chargingState = AndroidChargingState.UNKNOWN,
+                screenState = AndroidScreenState.UNKNOWN,
+            )
+        }
+    }
+
     private companion object {
         const val BLANK_SERIAL = " "
+        const val INVALID_BATTERY_PERCENTAGE = 101
     }
 }
