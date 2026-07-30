@@ -287,6 +287,50 @@ body {
   text-transform: uppercase;
 }
 
+.pp-product-shot {
+  position: relative;
+  margin: -1.5rem 0 4.5rem;
+}
+
+.pp-product-shot::before {
+  position: absolute;
+  inset: 8% 7% -4%;
+  z-index: -1;
+  content: "";
+  background: rgba(183, 243, 107, 0.12);
+  border-radius: 2rem;
+  filter: blur(3rem);
+}
+
+.pp-product-shot a {
+  display: block;
+  overflow: hidden;
+  background: var(--pp-panel);
+  border: 1px solid rgba(183, 243, 107, 0.22);
+  border-radius: 1.2rem;
+  box-shadow: 0 1.8rem 4rem rgba(0, 0, 0, 0.32);
+}
+
+.pp-product-shot img {
+  display: block;
+  width: 100%;
+  height: auto;
+  transition: transform 220ms ease;
+}
+
+.pp-product-shot a:hover img {
+  transform: scale(1.008);
+}
+
+.pp-product-shot figcaption {
+  margin-top: 0.8rem;
+  color: var(--pp-muted);
+  font: 0.65rem ui-monospace, "SFMono-Regular", monospace;
+  letter-spacing: 0.06em;
+  text-align: center;
+  text-transform: uppercase;
+}
+
 .pp-capability-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

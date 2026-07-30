@@ -11,6 +11,18 @@ PocketPortal is a self-hosted control plane that makes real Android hardware ava
 
 </div>
 
+<figure class="pp-product-shot">
+  <a href="assets/android-device-dashboard.png">
+    <img
+      src="assets/android-device-dashboard.png"
+      alt="PocketPortal live inventory showing an online Pixel 4 XL connected over USB and ADB"
+      width="2592"
+      height="1138"
+    >
+  </a>
+  <figcaption>Live inventory from the first Android device connected to PocketPortal.</figcaption>
+</figure>
+
 ## Current capabilities
 
 <div class="pp-capability-grid">
