@@ -162,6 +162,14 @@ focused on devices, browser control, and application installation.
   test verifies archive construction, repeat installation, symlink resolution,
   launcher access, status, and disconnect from a temporary clean home. macOS CI
   and the tag-driven release workflow pass.
+- PocketPortal Connect `v0.1.1` adds a user-triggered `update` command that
+  reads the latest GitHub Release, downloads the versioned archive and
+  checksum, rejects invalid or mismatched SHA-256 values, and invokes the
+  existing installer. `rollback VERSION` atomically repoints the command to an
+  explicitly selected installed immutable version. The clean package test
+  proves bad-checksum rejection, successful update, and rollback using local
+  release metadata. Updates never run silently or in the background and do not
+  disturb saved configuration, certificates, or Keychain credentials.
 - Off-LAN connectivity and coexistence with other VPNs are explicitly the final roadmap decision. Do not integrate Tailscale, WireGuard, Cloudflare Access, a relay, or public SSH yet. Finish the trusted home-network device lab and client workflow first, and never expose ADB or PocketPortal through router port forwarding as a shortcut.
 - Frontend dependencies are pinned in `frontend/package-lock.json`; Gradle builds and tests the frontend as part of the normal verification path. The clean-room image uses a dedicated Node build stage and copies only the compiled assets into the JVM build.
 - The selected USB hub has been purchased.

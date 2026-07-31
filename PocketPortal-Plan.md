@@ -950,6 +950,9 @@ PocketPortal's first useful release is successful when:
   require cloning the repository or invoking Gradle; preserve automatic ADB
   discovery, Keychain and managed-CA support, device selection, and clean
   teardown.
+- [x] Add user-triggered, checksum-verified PocketPortal Connect updates and
+  explicit rollback between installed immutable versions. Never add silent or
+  background automatic updates.
 - [ ] Consider Homebrew distribution only as the final distribution option and
   only after the project owner explicitly requests it. Do not create a tap,
   formula, or Homebrew workflow speculatively.
