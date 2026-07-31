@@ -72,11 +72,18 @@ body {
 }
 
 .md-header__title {
+  display: flex;
+  height: 34px;
   margin-left: 0;
+  align-items: center;
   font-weight: 700;
   font-size: 16px;
-  line-height: 1;
+  line-height: 34px;
   letter-spacing: -0.025em;
+}
+
+.md-header__ellipsis {
+  height: 34px;
 }
 
 .md-header__topic {
