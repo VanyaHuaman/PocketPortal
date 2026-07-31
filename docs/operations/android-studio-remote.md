@@ -30,10 +30,6 @@ Each client computer has a distinct ADB key. Android may ask the owner to
 approve that computer once for each physical device. Do not copy private ADB
 keys between computers.
 
-The workflow has been verified with a Pixel 4 XL running Android 13 from both a
-personal Mac and a work Mac. Android Studio displayed and controlled the
-device, installed an application, and launched it.
-
 ## Security boundary
 
 - Non-loopback PocketPortal connections require `wss://`.
