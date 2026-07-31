@@ -316,6 +316,10 @@ the server's main unfinished V1 capability:
 7. Do not begin users, leases, managed test execution, or off-LAN
    infrastructure before the lean V1 workflow is complete.
 
+Homebrew is explicitly outside the active packaging work. Treat it as the last
+possible distribution option and do not create a tap, formula, documentation,
+or automation for it unless the project owner directly asks for Homebrew.
+
 ## Guidance for the next AI
 
 - Treat `PocketPortal-Plan.md` as the source of truth and update it when decisions change.

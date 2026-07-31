@@ -950,6 +950,9 @@ PocketPortal's first useful release is successful when:
   require cloning the repository or invoking Gradle; preserve automatic ADB
   discovery, Keychain and managed-CA support, device selection, and clean
   teardown.
+- [ ] Consider Homebrew distribution only as the final distribution option and
+  only after the project owner explicitly requests it. Do not create a tap,
+  formula, or Homebrew workflow speculatively.
 - [ ] Evaluate off-LAN access and coexistence with personal or corporate VPNs last, after the local product workflow is complete.
 - [ ] Test several simultaneous scrcpy sessions.
 - [ ] Verify APK metadata inspection with representative debug and release builds.
