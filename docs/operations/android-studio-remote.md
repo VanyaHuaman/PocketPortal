@@ -87,10 +87,12 @@ explicit.
 
 ## PocketPortal Connect
 
-The repository now contains the first `pocketportal-connect` CLI and a
-disabled-by-default server bridge. Unlike the SSH proof, the bridge accepts
-only binary ADB traffic for one validated device serial. It does not provide a
-Linux shell or arbitrary network forwarding.
+The client CLI and macOS launcher live in the independent
+[`PocketPortal-Connect`](https://github.com/VanyaHuaman/PocketPortal-Connect)
+repository. This server repository retains the disabled-by-default bridge.
+Unlike the SSH proof, the bridge accepts only binary ADB traffic for one
+validated device serial. It does not provide a Linux shell or arbitrary
+network forwarding.
 
 ### Easy macOS launcher
 
@@ -99,6 +101,8 @@ SDK or `PATH`, copies the server certificate on first use, retrieves the bridge
 token over SSH, and stores that token in the current user's login Keychain:
 
 ```bash
+git clone https://github.com/VanyaHuaman/PocketPortal-Connect.git
+cd PocketPortal-Connect
 ./scripts/connect-macos.sh \
   --server wss://192.168.0.151:8443 \
   --ssh-target vanya@192.168.0.151
@@ -126,7 +130,7 @@ After the first run, connecting a device requires only:
 The underlying client listens only on `127.0.0.1`, asks the local ADB daemon
 to connect to that port, and carries the bytes over an authenticated WebSocket.
 Advanced users may still build and invoke it directly with
-`./gradlew :connect:installDist`.
+`./gradlew installDist` from the client repository.
 
 Non-loopback servers must use `wss://`; unencrypted `ws://` is accepted only
 for loopback development. The server-side bridge is enabled with

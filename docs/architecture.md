@@ -37,12 +37,13 @@ history, and off-LAN access enter only with V2 requirements.
 
 ## PocketPortal Connect
 
-The client bridge is a separate executable module. Android Studio keeps its
-normal local ADB daemon, which connects to a loopback-only listener. The client
-forwards only that connection through an authenticated WebSocket to a
-server-side adapter that validates one device serial, temporarily enables the
-device's authenticated network ADB transport, and restores USB-only mode when
-the session closes.
+The client is maintained in the independent
+[`PocketPortal-Connect`](https://github.com/VanyaHuaman/PocketPortal-Connect)
+repository. Android Studio keeps its normal local ADB daemon, which connects to
+a loopback-only listener. The client forwards only that connection through an
+authenticated WebSocket to this repository's server-side adapter, which
+validates one device serial, temporarily enables the device's authenticated
+network ADB transport, and restores USB-only mode when the session closes.
 
 The bridge is disabled by default. Non-loopback client connections require
 TLS. The Netty HTTPS/WSS connector, certificate setup, physical Pixel tunnel,

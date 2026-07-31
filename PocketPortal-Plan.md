@@ -121,16 +121,15 @@ monitoring, local `adb connect`, authorization guidance, and explicit
 Studio session hosted on Linux through remote desktop. Do not turn the server
 ADB smart socket or a device ADB port into a publicly listening service.
 
-The first PocketPortal Connect protocol slice now exists as a separate
-executable module. It exposes a loopback-only port to the client's normal ADB
+The first PocketPortal Connect protocol slice now lives in the independent
+`VanyaHuaman/PocketPortal-Connect` repository. It exposes a loopback-only port to the client's normal ADB
 daemon and forwards only those bytes through a token-authenticated WebSocket
 to one validated device. It is disabled by default and refuses plaintext
 non-loopback client connections. It is not ready for LAN deployment until the
 TLS connector and certificate workflow are implemented and tested locally.
-The physical Pixel and personal-Mac path has now passed end to end over WSS,
+The physical Pixel and personal/work-Mac path has now passed end to end over WSS,
 including local ADB visibility, device commands, Ctrl+C cleanup, removal of the
-local ADB entry, and restoration to USB on the server. The work-Mac validation
-remains.
+local ADB entry, and restoration to USB on the server.
 
 The work Mac uses employer-managed TLS traffic inspection. PocketPortal Connect
 must therefore use the normal JVM/system trust store by default and support an
@@ -141,12 +140,10 @@ not be the only connection mode. Never add the employer's private trust
 material to the PocketPortal server; only public CA certificates belong in a
 client trust configuration.
 
-Keep **PocketPortal Connect** as a separate executable and dependency boundary
-rather than adding desktop lifecycle concerns to the server application. It
-may move to its own repository when independent releases or reuse justify that
-cost. It may later gain a minimal macOS/Windows interface, credential storage,
-updates, and alternative private transports. Do not begin with a GUI or invent
-a general-purpose public tunnel, VPN, or authentication platform.
+Keep **PocketPortal Connect** in its independent repository rather than adding
+desktop lifecycle concerns to the server application. It may later gain a
+minimal macOS/Windows interface, updates, and alternative private transports.
+Do not invent a general-purpose public tunnel, VPN, or authentication platform.
 
 Off-LAN connectivity is deliberately the final roadmap decision. Do not choose
 or integrate Tailscale, WireGuard, Cloudflare Access, a relay, public SSH, or

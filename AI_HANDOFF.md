@@ -76,7 +76,7 @@ focused on devices, browser control, and application installation.
   after the CLI workflow earns that complexity. Do not put desktop lifecycle
   code into the PocketPortal server.
 - The first limited-access PocketPortal Connect protocol slice is implemented
-  as a separate `connect` executable module. It creates a loopback-only local
+  in the independent `VanyaHuaman/PocketPortal-Connect` repository. It creates a loopback-only local
   ADB listener and forwards only ADB bytes through a bearer-authenticated
   WebSocket to one validated server-side device serial. The server bridge is
   disabled by default, requires a 32-character-or-longer environment token,
@@ -114,13 +114,20 @@ focused on devices, browser control, and application installation.
   XL running Android 13 through authenticated WSS. Ctrl+C closed the tunnel,
   removed the local ADB entry, restored the Pixel to its USB serial on the
   server, and left PocketPortal active.
-- `scripts/connect-macos.sh` provides the first low-friction client launcher.
+- PocketPortal Connect's `scripts/connect-macos.sh` provides the first low-friction client launcher.
   It builds Connect when missing, discovers ADB from the Android SDK or `PATH`,
   bootstraps the server certificate and bridge token over SSH on first use,
   stores the token in the macOS login Keychain, discovers online devices from
   the API, accepts readable model identifiers such as `pixel-4-xl`, presents a
   styled arrow-key picker with device details when no device is supplied,
   remembers server settings after first use, and starts the scoped tunnel.
+- PocketPortal Connect was extracted on July 30, 2026 after its distinct
+  client runtime, security boundary, release cadence, packaging needs, and UI
+  had become concrete. This repository owns the server bridge and its API
+  contract; `VanyaHuaman/PocketPortal-Connect` owns the client engine, macOS
+  launcher, Keychain integration, ADB discovery, terminal UI, and packaging.
+  The standalone build and physical Pixel path passed before the duplicate
+  client module was removed here.
 - The live server currently reports two USB Android devices: Pixel 4 XL serial
   `9B011FFBA00A1L` and Lenovo TB336FU serial `HNY09D8P`.
 - Android observations now classify phone and tablet form factors from physical

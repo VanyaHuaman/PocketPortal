@@ -45,10 +45,9 @@ On a Linux host with user systemd, build the distribution elsewhere and install 
 
 The installer preserves configuration, activates an immutable versioned release, verifies both API endpoints, and automatically restores the previous release if health checks fail. Run `~/.local/bin/pocketportal doctor` for host diagnostics. See the [Linux runtime guide](./docs/operations/linux-runtime.md) for prerequisites, upgrades, and rollback.
 
-The optional limited Android Studio bridge uses a separate
-`pocketportal-connect` distribution. It requires HTTPS/WSS for non-loopback
-connections and supports both the normal Java trust store and an additional
-PEM CA bundle for managed computers with TLS inspection.
+The optional Android Studio client is maintained and released independently in
+[`VanyaHuaman/PocketPortal-Connect`](https://github.com/VanyaHuaman/PocketPortal-Connect).
+This repository retains the narrowly scoped, authenticated server-side bridge.
 
 ## Verify changes
 
@@ -97,7 +96,6 @@ The script creates an isolated `.venv-docs` environment and installs the pinned 
 - `infrastructure`: adapters for clocks and, later, ADB, SQLite, and processes
 - `web`: Ktor transport and API models
 - `app`: composition root and executable service
-- `connect`: loopback-only Android Studio bridge CLI
 - `frontend`: React application, added with the first dashboard feature
 - `testing/clean-room`: Podman-based fresh-Linux installation smoke test
 - `testing/linux-compatibility`: Debian- and Fedora-family installer contract tests
@@ -106,5 +104,9 @@ The script creates an isolated `.venv-docs` environment and installs the pinned 
 - `scripts/install-linux.sh`: resumable Linux install, upgrade, health check, and rollback
 
 PocketPortal is a modular monolith. Capabilities move into separate projects only when a concrete host, trust, runtime, lifecycle, scaling, or reuse boundary requires it.
+
+PocketPortal Connect is the first such extraction: its client runtime,
+Keychain integration, terminal UI, ADB discovery, and packaging lifecycle are
+independent from this Linux server.
 
 See [`PocketPortal-Plan.md`](./PocketPortal-Plan.md) for the roadmap and [`AI_HANDOFF.md`](./AI_HANDOFF.md) for continuation context.
