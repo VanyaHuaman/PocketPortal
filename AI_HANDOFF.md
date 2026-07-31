@@ -145,6 +145,15 @@ focused on devices, browser control, and application installation.
 - Device screenshots use contain-fit rather than crop-to-fill, and the portrait
   tablet frame follows the attached Lenovo's 10:16 display ratio. This keeps
   system bars and other screen-edge content visible.
+- Both public documentation sites were audited on July 30, 2026 after the
+  client repository split. PocketPortal Connect is now documented as the
+  supported Android Studio path; SSH is limited to first-run credential
+  bootstrap and a clearly marked diagnostic fallback. Current feature,
+  trusted-LAN TLS, managed-Mac, corporate-VPN, and physical validation claims
+  now agree across the public docs, product plan, and this handoff.
+- The PocketPortal and PocketPortal Connect documentation headers now use the
+  dashboard's exact 34 px mark, centered 16 px name, 6 px brand gap, and 88 px
+  header proportions. Both strict MkDocs builds and deployed-route checks pass.
 - Off-LAN connectivity and coexistence with other VPNs are explicitly the final roadmap decision. Do not integrate Tailscale, WireGuard, Cloudflare Access, a relay, or public SSH yet. Finish the trusted home-network device lab and client workflow first, and never expose ADB or PocketPortal through router port forwarding as a shortcut.
 - Frontend dependencies are pinned in `frontend/package-lock.json`; Gradle builds and tests the frontend as part of the normal verification path. The clean-room image uses a dedicated Node build stage and copies only the compiled assets into the JVM build.
 - The selected USB hub has been purchased.
@@ -275,9 +284,9 @@ The hub still needs a 24–48 hour six-device acceptance test. Verify stable ADB
 ## Security invariants
 
 - Never expose ADB, scrcpy, Appium, remote desktop, or internal worker services through router port forwarding.
-- Bind internal services to localhost where feasible. When enabling the V1 HTTP
-  endpoint on the LAN, restrict it to the trusted home subnet with the host
-  firewall.
+- Bind plaintext HTTP and internal services to localhost. Bind HTTPS/WSS only
+  to the trusted private-LAN address and restrict it to the home subnet with
+  the host firewall.
 - Treat APKs, AABs, filenames, metadata, and test suites as untrusted input.
 - Use fixed argument arrays such as `ProcessBuilder`; never interpolate browser input into shell commands.
 - Validate the target device against inventory immediately before acting and
@@ -288,19 +297,24 @@ The hub still needs a 24–48 hour six-device acceptance test. Verify stable ADB
 
 ## Immediate next action
 
-Continue the lean V1 while the full device lab is assembled:
+Finish the client workflow that has already passed technically, then return to
+the server's main unfinished V1 capability:
 
-1. Inventory and label all seven devices, cables, and hub ports.
-2. Connect the six Android devices to the powered hub.
-3. Install current Android platform tools and scrcpy on Ubuntu.
-4. Authorize every device for USB debugging.
-5. Run the 24–48 hour hub acceptance test and record battery and disconnect behavior.
-6. Test individual and simultaneous scrcpy sessions.
-7. Select a lightweight remote graphical session.
-8. Enable firewall-restricted home-LAN access and verify it from the personal Mac and PC.
-9. Confirm company policy before involving the work Mac.
-10. Continue browser control and APK/AAB installation based on observed
-    workflow and reliability issues; do not begin V2 platform features.
+1. Package PocketPortal Connect for macOS so a user does not need to clone the
+   repository or invoke Gradle.
+2. Preserve the proven ADB discovery, Keychain credential, optional PEM/JVM
+   trust, device picker, WSS bridge, and clean teardown behavior.
+3. Provide simple connect, disconnect, and status entry points and validate the
+   package from a clean macOS environment.
+4. Keep the current source launcher available as a development and fallback
+   path.
+5. Implement the server's bounded single-device APK upload, inspection,
+   confirmation, installation, optional launch, and cleanup vertical slice.
+6. When the remaining hardware is connected, inventory and label all devices,
+   cables, and hub ports; authorize USB debugging; and run the 24–48 hour
+   six-device hub acceptance test.
+7. Do not begin users, leases, managed test execution, or off-LAN
+   infrastructure before the lean V1 workflow is complete.
 
 ## Guidance for the next AI
 
