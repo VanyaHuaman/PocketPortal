@@ -106,6 +106,35 @@ curl --fail http://127.0.0.1:8080/api/status
 curl --fail http://127.0.0.1:8080/api/devices
 ```
 
+## Accessing the dashboard
+
+**Localhost access** (from the Linux host):
+
+```text
+http://127.0.0.1:8080
+```
+
+**Private LAN access** (from other devices on your network):
+
+Before TLS configuration:
+```text
+http://HOST_IP:8080
+```
+
+After running `configure-linux-tls.sh`:
+```text
+https://HOST_IP:8443
+```
+
+Replace `HOST_IP` with your server's private LAN address (e.g., `192.168.0.151`).
+
+The dashboard shows:
+- Live device inventory with model, Android version, battery, and connection details
+- Device screenshots (tap to enlarge)
+- Current device state (online, offline, unauthorized)
+
+When connecting from a browser on another machine, you may see a certificate warning since PocketPortal uses a self-signed certificate. This is expected for a private LAN deployment—accept the certificate to continue.
+
 !!! warning
     Bind plaintext HTTP only to loopback. Bind HTTPS/WSS only to a trusted
     private-LAN address protected by the host firewall. PocketPortal has no

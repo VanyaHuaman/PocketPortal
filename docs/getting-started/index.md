@@ -29,11 +29,13 @@ The bootstrap checks Java, uses the checked-in Gradle wrapper, builds every modu
 ./gradlew :app:run
 ```
 
-PocketPortal listens on the configured address. The default development endpoint is:
+PocketPortal listens on the configured address. Open your browser to:
 
 ```text
-http://localhost:8080/api/status
+http://localhost:8080
 ```
+
+The dashboard displays live device inventory with model, Android version, battery status, and bounded screenshots. The API is available at `/api/status` and `/api/devices`.
 
 Continue with the [development setup](development.md) or review [configuration](../configuration.md).
 
