@@ -32,61 +32,7 @@ keys between computers.
 
 The workflow has been verified with a Pixel 4 XL running Android 13 from both a
 personal Mac and a work Mac. Android Studio displayed and controlled the
-device, installed an application, and launched it. The work-Mac test also
-remained functional while its corporate VPN was connected. Installation and
-launch took several seconds, so the bridge should not be assumed to match
-direct-USB performance.
-
-## Why PocketPortal does not share its ADB server
-
-An earlier experiment forwarded the Linux ADB server's smart socket by setting
-`ADB_SERVER_SOCKET` on the Mac. CLI commands worked, but Android Studio
-terminated the remote daemon—even after both computers used ADB `36.0.2`.
-
-PocketPortal therefore never exposes its shared ADB smart socket to Android
-Studio. The supported bridge scopes a session to one validated physical device
-and leaves Android Studio attached to its own local ADB daemon.
-
-## Manual SSH fallback
-
-The original per-device SSH tunnel remains useful for diagnosis if
-PocketPortal Connect itself is unavailable. It is not the normal workflow.
-
-On the Linux host, find the device's Wi-Fi address and temporarily enable its
-authenticated network ADB transport:
-
-```bash
-adb -s DEVICE_SERIAL shell ip route
-adb -s DEVICE_SERIAL tcpip 5555
-```
-
-On the client, forward an unused loopback port through the Linux host and
-connect the local ADB daemon:
-
-```bash
-ssh -N -L 127.0.0.1:5556:DEVICE_WIFI_IP:5555 user@pocketportal-host
-adb connect 127.0.0.1:5556
-adb devices -l
-```
-
-To end the fallback session:
-
-```bash
-adb disconnect 127.0.0.1:5556
-# Stop the SSH tunnel with Ctrl+C.
-```
-
-Then restore USB mode from the Linux host:
-
-```bash
-adb -s DEVICE_SERIAL usb
-```
-
-!!! warning
-    While network ADB is enabled, the device listens for authenticated ADB
-    connections on port `5555` on its current network. Use it only on a trusted
-    network, never forward it through the router, and restore USB mode after
-    the session.
+device, installed an application, and launched it.
 
 ## Security boundary
 
