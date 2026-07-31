@@ -7,6 +7,7 @@ import dev.pocketportal.application.device.AndroidAdbBridgeResult
 import dev.pocketportal.domain.device.AndroidDeviceState
 import dev.pocketportal.domain.device.DeviceSerial
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import java.net.InetSocketAddress
 import java.net.Socket
@@ -78,12 +79,27 @@ class AdbAndroidAdbBridgeGateway internal constructor(
                 is BridgeCommandResult.Failed -> return@withContext failure(result.reason)
             }
 
-            val socket = try {
-                socketFactory(
-                    deviceAddress,
-                    AdbConstants.NETWORK_ADB_PORT,
-                    timeout.toMillis().coerceAtMost(Int.MAX_VALUE.toLong()).toInt(),
-                )
+            delay(TCPIP_INITIALIZATION_DELAY_MILLIS)
+
+            val socket: Socket = try {
+                var lastException: Exception? = null
+                var connectedSocket: Socket? = null
+                for (attempt in 0 until SOCKET_CONNECTION_RETRY_ATTEMPTS) {
+                    try {
+                        connectedSocket = socketFactory(
+                            deviceAddress,
+                            AdbConstants.NETWORK_ADB_PORT,
+                            timeout.toMillis().coerceAtMost(Int.MAX_VALUE.toLong()).toInt(),
+                        )
+                        break
+                    } catch (exception: Exception) {
+                        lastException = exception
+                        if (attempt < SOCKET_CONNECTION_RETRY_ATTEMPTS - 1) {
+                            delay(SOCKET_CONNECTION_RETRY_DELAY_MILLIS)
+                        }
+                    }
+                }
+                connectedSocket ?: throw (lastException ?: Exception("Socket connection failed"))
             } catch (_: Exception) {
                 restoreUsb(serial)
                 return@withContext failure(AndroidAdbBridgeFailure.CONNECTION_FAILED)
@@ -127,6 +143,9 @@ class AdbAndroidAdbBridgeGateway internal constructor(
 
     companion object {
         private const val SUCCESS_EXIT_CODE = 0
+        private const val TCPIP_INITIALIZATION_DELAY_MILLIS = 500L
+        private const val SOCKET_CONNECTION_RETRY_ATTEMPTS = 5
+        private const val SOCKET_CONNECTION_RETRY_DELAY_MILLIS = 500L
 
         internal fun parseDeviceAddress(output: String): String? {
             val tokens = output.lineSequence()
