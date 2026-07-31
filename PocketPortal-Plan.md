@@ -125,11 +125,12 @@ The first PocketPortal Connect protocol slice now lives in the independent
 `VanyaHuaman/PocketPortal-Connect` repository. It exposes a loopback-only port to the client's normal ADB
 daemon and forwards only those bytes through a token-authenticated WebSocket
 to one validated device. It is disabled by default and refuses plaintext
-non-loopback client connections. It is not ready for LAN deployment until the
-TLS connector and certificate workflow are implemented and tested locally.
-The physical Pixel and personal/work-Mac path has now passed end to end over WSS,
-including local ADB visibility, device commands, Ctrl+C cleanup, removal of the
-local ADB entry, and restoration to USB on the server.
+non-loopback client connections. The TLS connector and certificate workflow
+are implemented and deployed on the trusted home LAN. The physical Pixel and
+personal/work-Mac paths have passed end to end over WSS, including local ADB
+visibility, Android Studio control and installation, corporate-VPN
+coexistence, Ctrl+C cleanup, removal of the local ADB entry, and restoration to
+USB on the server.
 
 The work Mac uses employer-managed TLS traffic inspection. PocketPortal Connect
 must therefore use the normal JVM/system trust store by default and support an
@@ -942,8 +943,9 @@ PocketPortal's first useful release is successful when:
   executable-module boundary.
 - [x] Add and locally validate HTTPS/WSS plus certificate generation, owner-only
   secret storage, and client PEM/JVM trust handling.
-- [ ] Prove the limited-access bridge end to end from a Mac and confirm Android
-  Studio installation, launch, reconnect, and teardown behavior.
+- [x] Prove the limited-access bridge end to end from personal and work Macs;
+  confirm Android Studio control, installation, launch, corporate-VPN
+  coexistence, and clean teardown to USB mode.
 - [ ] Evaluate off-LAN access and coexistence with personal or corporate VPNs last, after the local product workflow is complete.
 - [ ] Test several simultaneous scrcpy sessions.
 - [ ] Verify APK metadata inspection with representative debug and release builds.

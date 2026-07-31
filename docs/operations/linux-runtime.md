@@ -18,7 +18,7 @@ Non-systemd Linux hosts will require another service-manager adapter. That is a 
 
 ## Initial safety boundary
 
-Until authentication and private networking are configured, bind PocketPortal to localhost:
+Before configuring trusted-home-LAN TLS, bind PocketPortal to localhost:
 
 ```properties
 server.host=127.0.0.1
@@ -107,7 +107,10 @@ curl --fail http://127.0.0.1:8080/api/devices
 ```
 
 !!! warning
-    Do not change the bind address to a LAN or public interface until PocketPortal authentication and the intended private-network controls are in place.
+    Bind plaintext HTTP only to loopback. Bind HTTPS/WSS only to a trusted
+    private-LAN address protected by the host firewall. PocketPortal has no
+    application login in V1; never expose it through router port forwarding or
+    a public interface.
 
 ## Installation status
 

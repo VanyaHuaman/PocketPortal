@@ -1,10 +1,10 @@
 # Getting started
 
 PocketPortal currently provides a single-owner web dashboard, Android device
-discovery and observations, bounded screenshots, and a safe wake action.
-Trusted-home-LAN access and application installation are planned next.
-PocketPortal-managed authentication, leases, test runners, and off-LAN access
-are deferred to V2.
+discovery and observations, bounded screenshots, a safe wake action, private
+home-LAN HTTPS, and the server side of the PocketPortal Connect bridge.
+Single-device APK installation is planned next. PocketPortal-managed
+authentication, leases, test runners, and off-LAN access are deferred to V2.
 
 ## Requirements
 
@@ -36,3 +36,6 @@ http://localhost:8080/api/status
 ```
 
 Continue with the [development setup](development.md) or review [configuration](../configuration.md).
+
+To connect a server-attached Android device to Android Studio on a Mac, use
+[PocketPortal Connect](https://vanyahuaman.github.io/PocketPortal-Connect/).

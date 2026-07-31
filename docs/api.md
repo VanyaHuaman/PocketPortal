@@ -110,6 +110,6 @@ returns `404`, a known but non-online device returns `409`, and an ADB execution
 failure returns `503`.
 
 !!! warning
-    The current endpoint has no application login. Keep PocketPortal bound to
-    localhost until firewall-restricted home-LAN access is configured, and
-    never expose device actions through router port forwarding.
+    The current endpoint has no application login. Use plaintext HTTP only on
+    loopback and expose HTTPS only to the trusted home LAN through the host
+    firewall. Never expose device actions through router port forwarding.

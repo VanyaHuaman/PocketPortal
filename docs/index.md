@@ -4,7 +4,9 @@
 
 # Your devices,<br>within reach.
 
-PocketPortal is a self-hosted control plane that makes real Android hardware available for secure remote access, application installation, and approved automated testing.
+PocketPortal is a self-hosted control plane that makes real Android hardware
+visible on a private dashboard and available to Android Studio through a
+limited, authenticated device bridge.
 
 [Get started](getting-started/index.md){ .md-button .md-button--primary }
 [View the API](api.md){ .md-button }
@@ -51,6 +53,8 @@ PocketPortal is a self-hosted control plane that makes real Android hardware ava
 PocketPortal will remain application-project agnostic. V1 is a single-owner
 personal lab for trusted-home-LAN device access, browser control, and
 application installation without requiring source-code projects or workspaces.
+The dashboard and Android Studio bridge are working now; browser-native control
+and APK/AAB installation remain active V1 work.
 Multi-user identity, roles, leases, managed test runs, and off-LAN access are
 deliberately deferred.
 

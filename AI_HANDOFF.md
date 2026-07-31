@@ -88,8 +88,11 @@ focused on devices, browser control, and application installation.
   addresses, a non-destructive Linux certificate/setup script, and client
   support that combines normal JVM trust with an optional PEM bundle. A
   disposable smoke test verified both HTTP and certificate-validated HTTPS.
-  The bridge still needs its first end-to-end deployment against the physical
-  Pixel; SSH remains the proven fallback until that passes.
+  The bridge passed end to end against the physical Pixel from personal and
+  work Macs, including Android Studio control and application installation,
+  corporate-VPN coexistence on the work Mac, and clean restoration to USB mode.
+  The raw SSH per-device tunnel remains a diagnostic fallback rather than the
+  supported daily workflow.
 - The work Mac has employer-managed TLS traffic inspection. The user already
   has a work-provided utility that installs the inspection CA for curl, Node,
   Java, and Ruby. PocketPortal Connect should use the JVM/system trust store by

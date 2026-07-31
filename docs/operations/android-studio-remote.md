@@ -1,38 +1,56 @@
 # Remote Android Studio
 
-PocketPortal can make a Linux-hosted USB device visible to Android Studio on
-another computer by keeping Android Studio on its normal local ADB server and
-tunneling one device's authenticated network ADB transport through SSH.
+PocketPortal Connect makes one Android device attached to the Linux server
+available to Android Studio on another computer. Android Studio keeps using its
+normal local ADB daemon; Connect opens a loopback-only ADB endpoint and carries
+that device's traffic over PocketPortal's authenticated WSS bridge.
 
-## Experiment result
+[Install PocketPortal Connect](https://vanyahuaman.github.io/PocketPortal-Connect/getting-started/installation/){ .md-button .md-button--primary }
 
-Do not forward the Linux ADB server's smart socket to Android Studio. The SSH
-and ADB protocol path works for CLI commands, but the IDE terminated the shared
-server daemon during testing.
+## Supported workflow
 
-During the first Mac-to-Linux test, Android Studio's ADB `36.0.2` repeatedly
-terminated the Ubuntu-packaged ADB `34.0.5` server. A CLI connection worked
-before Android Studio started. The server was then upgraded to an isolated ADB
-`36.0.2` and the experiment was repeated. Android Studio still terminated the
-remote daemon, proving that matching versions is necessary operational hygiene
-but does not make `ADB_SERVER_SOCKET` a dependable Android Studio integration.
+The client and its macOS launcher are maintained in the independent
+[`PocketPortal-Connect`](https://github.com/VanyaHuaman/PocketPortal-Connect)
+repository. The launcher:
 
-The first server now uses an isolated Platform Tools `36.0.2` installation:
+1. Finds ADB in the Android SDK or `PATH`.
+2. Retrieves the PocketPortal certificate and bridge credential over SSH on
+   first use.
+3. Stores the bridge credential in the macOS login Keychain.
+4. Presents the online devices returned by PocketPortal.
+5. Connects the selected device to the Mac's normal local ADB daemon.
+6. Removes the local endpoint and asks the server to restore USB mode when the
+   session ends.
 
-```text
-~/.local/share/pocketportal/tools/platform-tools-36.0.2/adb
-```
+SSH is used only for first-run bootstrap. The active device session is a
+limited, bearer-authenticated WSS connection; it does not provide a Linux
+shell, arbitrary port forwarding, or access to the server's shared ADB daemon.
 
-The Ubuntu package remains installed as a fallback. PocketPortal's external
-configuration selects the isolated executable with `android.adb.path`.
+Each client computer has a distinct ADB key. Android may ask the owner to
+approve that computer once for each physical device. Do not copy private ADB
+keys between computers.
 
-The archive came from Google's versioned Linux download and had this SHA-256:
+The workflow has been verified with a Pixel 4 XL running Android 13 from both a
+personal Mac and a work Mac. Android Studio displayed and controlled the
+device, installed an application, and launched it. The work-Mac test also
+remained functional while its corporate VPN was connected. Installation and
+launch took several seconds, so the bridge should not be assumed to match
+direct-USB performance.
 
-```text
-3afdea91441815ab41254193df0343d92c1b1c0d0237165c3a345c8af8891c31
-```
+## Why PocketPortal does not share its ADB server
 
-## Proven per-device workflow
+An earlier experiment forwarded the Linux ADB server's smart socket by setting
+`ADB_SERVER_SOCKET` on the Mac. CLI commands worked, but Android Studio
+terminated the remote daemon—even after both computers used ADB `36.0.2`.
+
+PocketPortal therefore never exposes its shared ADB smart socket to Android
+Studio. The supported bridge scopes a session to one validated physical device
+and leaves Android Studio attached to its own local ADB daemon.
+
+## Manual SSH fallback
+
+The original per-device SSH tunnel remains useful for diagnosis if
+PocketPortal Connect itself is unavailable. It is not the normal workflow.
 
 On the Linux host, find the device's Wi-Fi address and temporarily enable its
 authenticated network ADB transport:
@@ -42,126 +60,46 @@ adb -s DEVICE_SERIAL shell ip route
 adb -s DEVICE_SERIAL tcpip 5555
 ```
 
-On the client, forward an unused localhost port through the Linux host to that
-specific device:
+On the client, forward an unused loopback port through the Linux host and
+connect the local ADB daemon:
 
 ```bash
 ssh -N -L 127.0.0.1:5556:DEVICE_WIFI_IP:5555 user@pocketportal-host
-```
-
-Connect the client's normal local ADB daemon:
-
-```bash
 adb connect 127.0.0.1:5556
 adb devices -l
 ```
 
-The phone prompts once for that client computer's ADB public key. After
-authorization, launch Android Studio normally. The device appears as a network
-device such as `127.0.0.1:5556`; Android Studio continues using its own local
-ADB daemon and does not interfere with PocketPortal's server daemon.
-
-Each client computer has a distinct ADB key and must be approved once on each
-phone. Do not copy a private ADB key between computers to avoid approvals.
-
-## End the session
-
-Disconnect the client transport, close the SSH tunnel, and return the phone to
-USB-only ADB:
+To end the fallback session:
 
 ```bash
 adb disconnect 127.0.0.1:5556
 # Stop the SSH tunnel with Ctrl+C.
+```
+
+Then restore USB mode from the Linux host:
+
+```bash
 adb -s DEVICE_SERIAL usb
 ```
 
-Run the final command on the Linux host using the USB serial. Network ADB is
-temporary and commonly ends after a device reboot, but teardown should be
-explicit.
-
 !!! warning
-    While enabled, the phone listens for authenticated ADB connections on port
-    `5555` on its current network. Use this only on a trusted network, retain
-    Android's per-client authorization, never port-forward the device from the
-    router, and disable network ADB when the development session ends.
+    While network ADB is enabled, the device listens for authenticated ADB
+    connections on port `5555` on its current network. Use it only on a trusted
+    network, never forward it through the router, and restore USB mode after
+    the session.
 
-## PocketPortal Connect
+## Security boundary
 
-The client CLI and macOS launcher live in the independent
-[`PocketPortal-Connect`](https://github.com/VanyaHuaman/PocketPortal-Connect)
-repository. This server repository retains the disabled-by-default bridge.
-Unlike the SSH proof, the bridge accepts only binary ADB traffic for one
-validated device serial. It does not provide a Linux shell or arbitrary
-network forwarding.
+- Non-loopback PocketPortal connections require `wss://`.
+- The local ADB endpoint binds only to `127.0.0.1`.
+- The server validates the selected serial against live inventory.
+- The bridge credential is stored in Keychain rather than a shell profile or
+  repository file.
+- Managed Macs may use their normal Java trust store plus an explicit
+  PocketPortal PEM certificate.
+- Router port forwarding is not a supported deployment method.
 
-### Easy macOS launcher
-
-The macOS launcher builds the client when necessary, finds ADB from the Android
-SDK or `PATH`, copies the server certificate on first use, retrieves the bridge
-token over SSH, and stores that token in the current user's login Keychain:
-
-```bash
-git clone https://github.com/VanyaHuaman/PocketPortal-Connect.git
-cd PocketPortal-Connect
-./scripts/connect-macos.sh \
-  --server wss://192.168.0.151:8443 \
-  --ssh-target vanya@192.168.0.151
-```
-
-The first run may request SSH and Keychain approval. Subsequent runs reuse the
-certificate and Keychain credential and remember the server settings. In an
-interactive terminal, the launcher presents a PocketPortal-styled device list
-with arrow-key navigation, device health details, refresh, and quit controls.
-A model-based identifier is also accepted:
-
-```bash
-./scripts/connect-macos.sh \
-  --server wss://192.168.0.151:8443 \
-  --ssh-target vanya@192.168.0.151 \
-  --device pixel-4-xl
-```
-
-After the first run, connecting a device requires only:
-
-```bash
-./scripts/connect-macos.sh
-```
-
-The underlying client listens only on `127.0.0.1`, asks the local ADB daemon
-to connect to that port, and carries the bytes over an authenticated WebSocket.
-Advanced users may still build and invoke it directly with
-`./gradlew installDist` from the client repository.
-
-Non-loopback servers must use `wss://`; unencrypted `ws://` is accepted only
-for loopback development. The server-side bridge is enabled with
-`android.bridge.enabled=true` and reads its token only from
-`POCKETPORTAL_ADB_BRIDGE_TOKEN`.
-
-Managed computers may use TLS inspection. The client uses the JVM trust store
-by default and combines it with the optional PEM bundle supplied through
-`--ca-certificate`. A company CA already installed into Java therefore
-continues to work, while the PEM bundle trusts PocketPortal's private
-host-specific certificate when traffic is not intercepted.
-
-!!! warning
-    TLS support, setup tooling, local ADB connectivity, and clean USB
-    restoration have passed their first live Pixel validation. Do not expose
-    the plaintext HTTP connector or bridge through router port forwarding.
-
-The implementation preserves these requirements:
-
-- Check the Android Studio and server ADB versions before opening a tunnel.
-- Select a free localhost port without replacing the user's normal ADB server.
-- Establish and monitor the scoped PocketPortal tunnel.
-- Keep Android Studio attached to its normal local ADB server.
-- Enable, tunnel, reconnect, monitor, and disable one device transport.
-- Track a separate local port for each simultaneous device.
-- Report disconnects and version mismatches clearly.
-- Restore normal local Android Studio behavior when the session ends.
-- Avoid storing passwords or exposing ADB beyond localhost.
-
-The first end-to-end validation used a Pixel 4 XL on Android 13, a Linux host,
-and Android Studio on macOS. The user successfully interacted with the device,
-installed an application, and launched it from Android Studio. Installation and
-launch took several seconds, so this workflow should be treated as functional
-but not assumed to match direct-USB performance.
+See the
+[PocketPortal Connect documentation](https://vanyahuaman.github.io/PocketPortal-Connect/)
+for current installation, terminal controls, managed-Mac trust, and
+troubleshooting instructions.
