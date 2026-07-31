@@ -946,7 +946,7 @@ PocketPortal's first useful release is successful when:
 - [x] Prove the limited-access bridge end to end from personal and work Macs;
   confirm Android Studio control, installation, launch, corporate-VPN
   coexistence, and clean teardown to USB mode.
-- [ ] Publish a packaged PocketPortal Connect macOS release that does not
+- [x] Publish a packaged PocketPortal Connect macOS release that does not
   require cloning the repository or invoking Gradle; preserve automatic ADB
   discovery, Keychain and managed-CA support, device selection, and clean
   teardown.
@@ -1002,10 +1002,10 @@ PocketPortal's first useful release is successful when:
 
 ## 17. Recommended next action
 
-Package the proven PocketPortal Connect workflow for macOS so daily use no
-longer requires a source checkout or Gradle. Validate that package from a clean
-Mac while preserving ADB discovery, Keychain and managed-CA trust, device
-selection, Android Studio connectivity, and clean USB restoration. Then
-implement the server's bounded single-device APK installation slice. Validate
-the full six-device hub before adding shared-user, automation-runner, or
-off-LAN infrastructure.
+Implement the server's bounded single-device APK installation slice: accept a
+size-limited upload into server-generated temporary storage, derive and display
+trusted package metadata and checksums, require explicit device and replacement
+confirmation, revalidate the device, install through fixed ADB arguments,
+optionally launch after success, and clean up predictably. Validate the full
+six-device hub before adding shared-user, automation-runner, or off-LAN
+infrastructure.

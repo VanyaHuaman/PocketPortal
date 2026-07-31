@@ -154,6 +154,14 @@ focused on devices, browser control, and application installation.
 - The PocketPortal and PocketPortal Connect documentation headers now use the
   dashboard's exact 34 px mark, centered 16 px name, 6 px brand gap, and 88 px
   header proportions. Both strict MkDocs builds and deployed-route checks pass.
+- PocketPortal Connect `v0.1.0` is the first packaged macOS release. GitHub
+  Releases provides `pocketportal-connect-0.1.0-macos.zip` and its SHA-256
+  checksum. The archive installs without `sudo` into immutable user-local
+  release storage, exposes `pocketportal-connect` through `~/.local/bin`, and
+  supports `connect`, `disconnect`, `status`, and `version`. The package smoke
+  test verifies archive construction, repeat installation, symlink resolution,
+  launcher access, status, and disconnect from a temporary clean home. macOS CI
+  and the tag-driven release workflow pass.
 - Off-LAN connectivity and coexistence with other VPNs are explicitly the final roadmap decision. Do not integrate Tailscale, WireGuard, Cloudflare Access, a relay, or public SSH yet. Finish the trusted home-network device lab and client workflow first, and never expose ADB or PocketPortal through router port forwarding as a shortcut.
 - Frontend dependencies are pinned in `frontend/package-lock.json`; Gradle builds and tests the frontend as part of the normal verification path. The clean-room image uses a dedicated Node build stage and copies only the compiled assets into the JVM build.
 - The selected USB hub has been purchased.
@@ -297,23 +305,22 @@ The hub still needs a 24–48 hour six-device acceptance test. Verify stable ADB
 
 ## Immediate next action
 
-Finish the client workflow that has already passed technically, then return to
-the server's main unfinished V1 capability:
+Return to the server's main unfinished V1 capability:
 
-1. Package PocketPortal Connect for macOS so a user does not need to clone the
-   repository or invoke Gradle.
-2. Preserve the proven ADB discovery, Keychain credential, optional PEM/JVM
-   trust, device picker, WSS bridge, and clean teardown behavior.
-3. Provide simple connect, disconnect, and status entry points and validate the
-   package from a clean macOS environment.
-4. Keep the current source launcher available as a development and fallback
-   path.
-5. Implement the server's bounded single-device APK upload, inspection,
+1. Implement the server's bounded single-device APK upload, inspection,
    confirmation, installation, optional launch, and cleanup vertical slice.
-6. When the remaining hardware is connected, inventory and label all devices,
+2. Derive package name, label, versions, SDK requirements, signing fingerprint,
+   permissions, file size, and SHA-256 from the uploaded APK rather than
+   trusting browser metadata or filenames.
+3. Revalidate the explicit target device immediately before installation and
+   use only fixed ADB argument lists; keep replace, downgrade, clear-data, and
+   uninstall semantics separate and explicitly confirmed.
+4. Keep uploads size-limited, use server-generated job directories, report
+   bounded safe failures, and clean temporary files predictably.
+5. When the remaining hardware is connected, inventory and label all devices,
    cables, and hub ports; authorize USB debugging; and run the 24–48 hour
    six-device hub acceptance test.
-7. Do not begin users, leases, managed test execution, or off-LAN
+6. Do not begin users, leases, managed test execution, or off-LAN
    infrastructure before the lean V1 workflow is complete.
 
 Homebrew is explicitly outside the active packaging work. Treat it as the last
