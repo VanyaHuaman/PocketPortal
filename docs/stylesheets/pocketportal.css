@@ -47,15 +47,15 @@ body {
 }
 
 .md-header__inner {
-  min-height: 5.5rem;
+  min-height: 88px;
 }
 
 .md-header__button.md-logo {
   display: grid;
-  flex: 0 0 2.125rem;
-  width: 2.125rem;
-  height: 2.125rem;
-  margin: 0 0.75rem 0 0;
+  flex: 0 0 34px;
+  width: 34px;
+  height: 34px;
+  margin: 0 12px 0 0;
   padding: 0;
   place-items: center;
   background: transparent;
@@ -67,14 +67,14 @@ body {
 }
 
 .md-header__button.md-logo img {
-  width: 2.125rem;
-  height: 2.125rem;
+  width: 34px;
+  height: 34px;
 }
 
 .md-header__title {
   margin-left: 0;
   font-weight: 700;
-  font-size: 1rem;
+  font-size: 16px;
   line-height: 1;
   letter-spacing: -0.025em;
 }
