@@ -8,6 +8,7 @@ PocketPortal is a self-hosted control plane that makes real Android hardware ava
 
 [Get started](getting-started/index.md){ .md-button .md-button--primary }
 [View the API](api.md){ .md-button }
+[PocketPortal Connect](https://vanyahuaman.github.io/PocketPortal-Connect/){ .md-button }
 
 </div>
 
