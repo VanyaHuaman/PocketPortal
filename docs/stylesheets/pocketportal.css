@@ -344,13 +344,53 @@ body {
   transform: scale(1.008);
 }
 
-.pp-product-shot figcaption {
+.pp-product-shot figcaption,
+.pp-product-shot .pp-caption {
   margin-top: 0.8rem;
   color: var(--pp-muted);
   font: 0.65rem ui-monospace, "SFMono-Regular", monospace;
   letter-spacing: 0.06em;
   text-align: center;
   text-transform: uppercase;
+}
+
+.pp-product-shot p {
+  margin-bottom: 0;
+}
+
+/* Customize glightbox modal for dark theme */
+.glightbox-container {
+  background: rgba(12, 20, 17, 0.95) !important;
+}
+
+.goverlay {
+  background: rgba(12, 20, 17, 0.95) !important;
+}
+
+body.glightbox-open .gcontainer {
+  background: transparent !important;
+}
+
+.glightbox-clean .gslide-description {
+  background: var(--pp-panel);
+}
+
+.glightbox-clean .gdesc-inner {
+  color: var(--pp-ink);
+}
+
+.glightbox-clean .gclose,
+.glightbox-clean .gprev,
+.glightbox-clean .gnext {
+  color: var(--pp-ink) !important;
+  background: var(--pp-panel) !important;
+  border-radius: 50%;
+}
+
+.glightbox-clean .gclose:hover,
+.glightbox-clean .gprev:hover,
+.glightbox-clean .gnext:hover {
+  background: var(--pp-panel-light) !important;
 }
 
 .pp-capability-grid {

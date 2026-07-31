@@ -50,5 +50,10 @@ markdown_extensions:
 
 plugins:
   - search
+  - glightbox:
+      auto_caption: false
+      skip_classes:
+        - skip-lightbox
+      background: rgba(12, 20, 17, 0.95)
 
 strict: true

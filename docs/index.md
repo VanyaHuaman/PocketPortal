@@ -14,17 +14,13 @@ limited, authenticated device bridge.
 
 </div>
 
-<figure class="pp-product-shot">
-  <a href="assets/android-device-dashboard.png">
-    <img
-      src="assets/android-device-dashboard.png"
-      alt="PocketPortal live inventory showing an online Pixel 4 XL with Android version, battery, screen, connection, and observation details"
-      width="2602"
-      height="1238"
-    >
-  </a>
-  <figcaption>Live inventory from the first Android device connected to PocketPortal.</figcaption>
-</figure>
+<div class="pp-product-shot" markdown>
+
+![PocketPortal live inventory showing an online Pixel 4 XL with Android version, battery, screen, connection, and observation details](assets/android-device-dashboard.png)
+
+<p class="pp-caption">Live inventory from the first Android device connected to PocketPortal.</p>
+
+</div>
 
 ## Current capabilities
 
